@@ -1,0 +1,43 @@
+[versions]
+# libraries
+junit = "5.11.4"
+cdk = "2.11"
+cdkScaffold = "2.8"
+javafx = "21.0.1"
+openpdf = "2.0.3"
+annotations = "19.0.0"
+
+# plugins
+javafxplugin = "0.1.0"
+spotless = "7.0.2"
+
+[libraries]
+annotations = { group = "org.jetbrains", name = "annotations", version.ref = "annotations" }
+cdkBundle = { group = "org.openscience.cdk", name = "cdk-bundle", version.ref = "cdk"}
+cdkPdb = { group = "org.openscience.cdk", name = "cdk-pdb", version.ref = "cdk" }
+cdkSilent = { group = "org.openscience.cdk", name = "cdk-silent", version.ref = "cdk" }
+cdkExtra = { group = "org.openscience.cdk", name = "cdk-extra", version.ref = "cdk" }
+cdkDepict = { group = "org.openscience.cdk", name = "cdk-depict", version.ref = "cdk" }
+cdkMisc = { group = "org.openscience.cdk", name = "cdk-misc", version.ref = "cdk" }
+cdkCore = { group = "org.openscience.cdk", name = "cdk-core", version.ref = "cdk" }
+cdkHash = { group = "org.openscience.cdk", name = "cdk-hash", version.ref = "cdk" }
+cdkInterfaces = { group = "org.openscience.cdk", name = "cdk-interfaces", version.ref = "cdk" }
+cdkIoformats = { group = "org.openscience.cdk", name = "cdk-ioformats", version.ref = "cdk" }
+cdkSmiles = { group = "org.openscience.cdk", name = "cdk-smiles", version.ref = "cdk" }
+cdkInchi = { group = "org.openscience.cdk", name = "cdk-inchi", version.ref = "cdk" }
+cdkStandard = { group = "org.openscience.cdk", name = "cdk-standard", version.ref = "cdk" }
+cdkValencycheck = { group = "org.openscience.cdk", name = "cdk-valencycheck", version.ref = "cdk" }
+cdkFragment = { group = "org.openscience.cdk", name = "cdk-fragment", version.ref = "cdk" }
+cdkScaffold = { group = "org.openscience.cdk", name = "cdk-scaffold", version.ref = "cdkScaffold" }
+
+openpdf = { group = "com.github.librepdf", name = "openpdf", version.ref = "openpdf" }
+javafxControls = { group = "org.openjfx", name = "javafx-controls", version.ref = "javafx" }
+javafxSwing = { group = "org.openjfx", name = "javafx-swing", version.ref = "javafx" }
+javafxGraphics = { group = "org.openjfx", name = "javafx-graphics", version.ref = "javafx" }
+javafxBase = { group = "org.openjfx", name = "javafx-base", version.ref = "javafx" }
+junit = { group = "org.junit", name = "junit-bom", version.ref = "junit" }
+jupiter = { group = "org.junit.jupiter", name = "junit-jupiter" }
+
+[plugins]
+javafxplugin = { id = "org.openjfx.javafxplugin", version.ref = "javafxplugin" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
