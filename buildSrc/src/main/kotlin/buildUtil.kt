@@ -11,6 +11,17 @@ import java.io.File
  * @param aMortarOptimizationVariable a specific JVM option to be added or replaced in the scripts
  */
 fun modifyMortarStartScripts(aWindowsFile: File, anUnixFile: File, aMortarOptimizationVariable: String) {
+    val tmpOldStartupString: String = when (aMortarOptimizationVariable) {
+        "%MORTAR_OPTS%" -> {
+            "\"%JAVA_EXE%\" %DEFAULT_JVM_OPTS% %JAVA_OPTS% $aMortarOptimizationVariable  -classpath \"%CLASSPATH%\"  %*"
+        }
+        "%MORTAR_20_GB_OPTS%" -> {
+            "\"%JAVA_EXE%\" %DEFAULT_JVM_OPTS% %JAVA_OPTS% $aMortarOptimizationVariable  -classpath \"%CLASSPATH%\" de.unijena.cheminf.mortar.main.Main %*"
+        }
+        else -> {
+            throw IllegalArgumentException("MORTAR optimization variable must be either %MORTAR_OPTS% or MORTAR_20_GB_OPTS")
+        }
+    }
     // Windows script edits
     aWindowsFile.writeText(
         aWindowsFile.readText()
@@ -26,7 +37,7 @@ fun modifyMortarStartScripts(aWindowsFile: File, anUnixFile: File, aMortarOptimi
             )
             .replace(Regex("set CLASSPATH=.*"), "set CLASSPATH=.;%APP_HOME%/lib/*")
             .replace(
-                "\"%JAVA_EXE%\" %DEFAULT_JVM_OPTS% %JAVA_OPTS% $aMortarOptimizationVariable  -classpath \"%CLASSPATH%\" de.unijena.cheminf.mortar.main.Main %*",
+                tmpOldStartupString,
                 "start \"MORTAR\" \"%JAVA_EXE%\" %DEFAULT_JVM_OPTS% %JAVA_OPTS% $aMortarOptimizationVariable  -classpath \"%CLASSPATH%\" de.unijena.cheminf.mortar.main.Main \"-skipJavaVersionCheck\""
             )
             .replace(

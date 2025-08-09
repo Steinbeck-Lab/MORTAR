@@ -1,0 +1,200 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+# This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
+
+name: Cross-Platform Deployment
+on:
+  # TODO: The workflow triggers need to be changed to the correct values
+  push:
+    branches: [ "GitHub_Actions_Development" ]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        java: [ '21.0.1' ]
+      fail-fast: false
+    name: 'windows-latest'
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: 'temurin'
+      - name: Echo JAVA_HOME
+        run: echo $JAVA_HOME
+      - name: Verify Gradle Wrapper
+        uses: gradle/actions/wrapper-validation@v3
+      - name: Build extension
+        run: ./gradlew installDist
+      - name: Download Inno Setup installer
+        run: Invoke-WebRequest -Uri https://files.jrsoftware.org/is/6/innosetup-6.4.2.exe -OutFile inno-setup.exe
+      - name: Install Inno Setup
+        run: |
+          .\inno-setup.exe /SILENT
+      - name: Add Inno Setup to PATH
+        run: |
+          $env:PATH += ";C:\Program Files (x86)\Inno Setup 6"
+      - name: Create directories for setup
+        run: |
+          New-Item -ItemType Directory -Force -Path .\in
+          New-Item -ItemType Directory -Force -Path .\in\bin
+          New-Item -ItemType Directory -Force -Path .\in\lib
+          New-Item -ItemType Directory -Force -Path .\in\tutorial
+          New-Item -ItemType Directory -Force -Path .\in\icon
+          New-Item -ItemType Directory -Force -Path .\in\jdk-21.0.1_12_jre
+      - name: Prepare files for setup
+        run: |
+          Copy-Item -Path .\build\install\MORTAR\bin\* -Destination .\in\bin -Recurse -Force
+          Copy-Item -Path .\build\install\MORTAR\lib\* -Destination .\in\lib -Recurse -Force
+          Copy-Item -Path .\build\install\MORTAR\tutorial\* -Destination .\in\tutorial -Recurse -Force
+          Copy-Item -Path .\Images\Mortar_Logo_Icon1.ico -Destination .\in\icon -Force
+      - name: Download Temurin JRE
+        run: |
+          Invoke-WebRequest -Uri https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.1%2B12/OpenJDK21U-jre_x64_windows_hotspot_21.0.1_12.zip -OutFile jre.zip
+          Expand-Archive -Path jre.zip -DestinationPath .\temp_jre
+          $jreDir = Get-ChildItem -Path .\temp_jre | Where-Object { $_.PSIsContainer } | Select-Object -First 1
+          Move-Item -Path "$($jreDir.FullName)\*" -Destination .\in\jdk-21.0.1_12_jre -Force
+          Remove-Item -Path jre.zip -Force
+          Remove-Item -Path .\temp_jre -Recurse -Force
+      - name: Create setup.iss file
+        run: |
+          $setupIssContent = @"
+          [Setup]
+          WizardStyle=modern
+          AppName=MORTAR
+          AppVersion=1.4.0.0
+          AppCopyright=Copyright (C) 2024  Felix Baensch, Jonas Schaub; licensed under MIT license
+          AppId={{123D52C3-D86D-4735-9929-C7DF176DG538}
+          DefaultDirName={commonpf}\MORTAR\MORTARv1.4.0.0
+          ; An app publisher is missing! If there is none just delete that line.
+          AppPublisher=?
+          VersionInfoProductName=MORTAR
+          MinVersion=10.0.19045
+          OutputDir=.\out
+          OutputBaseFilename=MORTAR_1.4.0.0_Setup
+          DisableReadyPage=True
+          DisableWelcomePage=False
+          DisableDirPage=True
+          DisableProgramGroupPage=True
+          UninstallDisplayName=MORTAR
+          UninstallDisplayIcon={app}\icon\Mortar_Logo_Icon1.ico
+          ArchitecturesInstallIn64BitMode=x64
+          LicenseFile=LICENSE.txt
+          [Languages]
+          Name: "english"; MessagesFile: "compiler:Default.isl"
+          [Dirs]
+          Name: "{app}"
+          [Files]
+          ; Place any regular files here
+          Source: ".\in\bin\*"; DestDir: "{app}\bin"; Flags: ignoreversion recursesubdirs createallsubdirs;
+          Source: ".\in\jdk-21.0.1_12_jre\*"; DestDir: "{app}\jdk-21.0.1_12_jre"; Flags: ignoreversion recursesubdirs createallsubdirs;
+          Source: ".\in\lib\*"; DestDir: "{app}\lib"; Flags: ignoreversion recursesubdirs createallsubdirs;
+          Source: ".\in\tutorial\*"; DestDir: "{app}\tutorial"; Flags: ignoreversion recursesubdirs createallsubdirs;
+          Source: ".\in\icon\*"; DestDir: "{app}\icon"; Flags: ignoreversion recursesubdirs createallsubdirs;
+          [Icons]
+          Name: "{commondesktop}\MORTAR"; Filename: "{app}\bin\MORTAR.bat"; IconFilename: "{app}\icon\Mortar_Logo_Icon1.ico"
+          Name: "{commonstartmenu}\MORTAR"; Filename: "{app}\bin\MORTAR.bat"; IconFilename: "{app}\icon\Mortar_Logo_Icon1.ico"
+          ; Shortcuts for the 20GB BAT file
+          Name: "{commondesktop}\MORTAR20GB"; Filename: "{app}\bin\MORTAR_20GB.bat"; IconFilename: "{app}\icon\Mortar_Logo_Icon1.ico"
+          Name: "{commonstartmenu}\MORTAR20GB"; Filename: "{app}\bin\MORTAR_20GB.bat"; IconFilename: "{app}\icon\Mortar_Logo_Icon1.ico"
+          [Run]
+          ; Below is an example for a batch file that runs after the setup. Just for demo purposes.
+          ;Filename: "{app}\tmp\setup.bat"; Flags: runhidden waituntilterminated
+          [UninstallDelete]
+          Type: filesandordirs; Name: "{app}"
+          "@
+          $setupIssContent | Out-File -FilePath setup.iss -Encoding UTF8
+      - name: Compile .iss file
+        run: iscc setup.iss
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MORTAR-1.4.0.0-setup
+          path: ./out/*.exe
+
+  build-macos:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ macos-13 , macos-latest ]
+        java: [ '21.0.1' ]
+      fail-fast: false
+    name: ${{ matrix.os }}
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: 'temurin'
+      - name: Echo JAVA_HOME
+        run: echo $JAVA_HOME
+      - name: Verify Gradle Wrapper
+        uses: gradle/actions/wrapper-validation@v3
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Execute fatJar or fatJarAarch64
+        run: |
+          if [ "${{ matrix.os }}" == "macos-latest" ]; then
+            ./gradlew --info --stacktrace fatJarAarch64
+            jpackage -i . -n MORTAR --icon Images/MORTAR-icon.icns --main-jar build/libs/MORTAR-fat-aarch64-1.4.0.0.jar -t dmg --app-version 1.4.0 --copyright "Copyright (C) 2025  Felix Baensch, Jonas Schaub; licensed under MIT license" --description "MORTAR - MOlecule fRagmenTAtion fRamework" --java-options "-Xms512m -Xmx4g" --about-url "https://github.com/FelixBaensch/MORTAR"
+          else
+            ./gradlew --info --stacktrace fatJar
+            jpackage -i . -n MORTAR --icon Images/MORTAR-icon.icns --main-jar build/libs/MORTAR-fat-1.4.0.0.jar -t dmg --app-version 1.4.0 --copyright "Copyright (C) 2025  Felix Baensch, Jonas Schaub; licensed under MIT license" --description "MORTAR - MOlecule fRagmenTAtion fRamework" --java-options "-Xms512m -Xmx4g" --about-url "https://github.com/FelixBaensch/MORTAR"
+          fi
+      - name: Upload DMG as an artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MORTAR-1.4.0-${{ matrix.os }}.dmg
+          path: ./*.dmg
+          retention-days: 30
+          compression-level: 0 # no compression since it makes no difference
+
+  build-linux:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        java: [ '21.0.1' ]
+    name: 'ubuntu-latest'
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: 'temurin'
+      - name: Echo JAVA_HOME
+        run: echo $JAVA_HOME
+      - name: Verify Gradle Wrapper
+        uses: gradle/actions/wrapper-validation@v3
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Execute fatJar
+        run: ./gradlew --info --stacktrace fatJar
+      - name: Execute jpackage
+        run: jpackage -i . -n MORTAR --icon Images/MORTAR-icon.icns --main-jar build/libs/MORTAR-fat-1.4.0.0.jar -t deb --app-version 1.4.0 --copyright "Copyright (C) 2025  Felix Baensch, Jonas Schaub; licensed under MIT license" --description "MORTAR - MOlecule fRagmenTAtion fRamework" --java-options "-Xms512m -Xmx4g" --about-url "https://github.com/FelixBaensch/MORTAR"
+      - name: Upload DEB as an artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MORTAR-1.4.0.deb
+          path: ./*.deb
+          retention-days: 30
+          compression-level: 0 # no compression since it makes no difference
+      - name: Execute jpackage
+        run: jpackage -i . -n MORTAR --icon Images/MORTAR-icon.icns --main-jar build/libs/MORTAR-fat-1.4.0.0.jar -t rpm --app-version 1.4.0 --copyright "Copyright (C) 2025  Felix Baensch, Jonas Schaub; licensed under MIT license" --description "MORTAR - MOlecule fRagmenTAtion fRamework" --java-options "-Xms512m -Xmx4g" --about-url "https://github.com/FelixBaensch/MORTAR"
+      - name: Upload RPM as an artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MORTAR-1.4.0.rpm
+          path: ./*.rpm
+          retention-days: 30
+          compression-level: 0 # no compression since it makes no difference

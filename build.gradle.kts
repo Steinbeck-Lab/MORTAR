@@ -127,6 +127,20 @@ val mortarHighMemory = createMortarStartScriptTask(
     providers.gradleProperty("highMemoryOptimization").get(),
     providers.gradleProperty("highHeapSize").get()
 )
+
+// This task is needed to correctly modify the start scripts for the installDist task
+tasks.named<CreateStartScripts>("startScripts") {
+    applicationName = "MORTAR"  // This will create MORTAR.bat and MORTAR (Unix)
+
+    val defaultHeapSize = providers.gradleProperty("defaultHeapSize").get()
+    val defaultMemoryOptimization = providers.gradleProperty("defaultMemoryOptimization").get()
+
+    defaultJvmOpts = listOf("-Xms$defaultHeapSize", "-Xmx$defaultHeapSize")
+
+    doLast {
+        modifyMortarStartScripts(windowsScript, unixScript, defaultMemoryOptimization)
+    }
+}
 //</editor-fold>
 
 //<editor-fold desc="FatJar tasks">
@@ -148,7 +162,7 @@ fun createFatJarTask(
     group = "build"
     description = aDescription
     val tmpAppVersion = providers.gradleProperty("appVersion").get()
-    archiveFileName.set("${providers.gradleProperty("appName").get()}-${tmpAppVersion}-fat${anArchiveClassifier}.jar")
+    archiveFileName.set("${providers.gradleProperty("appName").get()}-fat${anArchiveClassifier}-${tmpAppVersion}.jar")
 
     manifest {
         attributes(
@@ -184,7 +198,7 @@ val fatJar by createFatJarTask(
 
 val fatJarAarch64 by createFatJarTask(
     aDescription = "Creates a fat JAR with all runtime dependencies for Aarch64",
-    anArchiveClassifier = "aarch64",
+    anArchiveClassifier = "-aarch64",
     aManifestTitle = "MORTAR Fat Jar File for AArch64"
 ) { file -> !file.name.endsWith("linux.jar") && !file.name.endsWith("mac.jar") }
 //</editor-fold>
