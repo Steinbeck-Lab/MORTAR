@@ -277,13 +277,24 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
      */
     public static final SRUFragmenterPreservationMode PRESERVATION_MODE_DEFAULT =
             SRUFragmenterPreservationMode.HEAVY_ATOM_COUNT;
+
+    /**
+     * Default for whether the positions of bonds broken during aglycone and sugar separation should be marked with pseudo ("R") atoms.
+     */
+    public static final boolean MARK_ATTACH_POINTS_BY_R_DEFAULT = false;
+
+    /**
+     * Default for whether the sugar moieties should be post-processed after fragmentation, i.e. whether glycosidic
+     * bonds between circular sugars and ether, ester, and peroxide bonds between linear sugars should be split.
+     */
+    public static final boolean POST_PROCESS_SUGARS_DEFAULT = false;
     //</editor-fold>
     //
     //<editor-fold desc="Private final variables">
     /**
      * Instance of the Sugar Removal Utility used internally to detect and remove the sugar moieties.
      */
-    private final SugarRemovalUtility sugarRUInstance;
+    private final SugarDetectionUtility sugarRUInstance;
 
     //note: since Java 21, the javadoc build complains about "double comments" when there is a comment
     // for the get() method of the property and the private property itself as well
@@ -317,6 +328,10 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
 
     private final SimpleBooleanProperty detectCircularSugarsWithKetoGroupsSetting;
 
+    private final SimpleBooleanProperty markAttachPointsByRSetting;
+
+    private final SimpleBooleanProperty postProcessSugarsSetting;
+
     /**
      * All settings of this fragmenter, encapsulated in JavaFX properties for binding in GUI.
      */
@@ -343,8 +358,8 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
      * Constructor, all settings are initialised with their default values as declared in the respective public constants.
      */
     public SugarRemovalUtilityFragmenter() {
-        this.sugarRUInstance = new SugarRemovalUtility(SilentChemObjectBuilder.getInstance());
-        int tmpNumberOfSettings = 15;
+        this.sugarRUInstance = new SugarDetectionUtility(SilentChemObjectBuilder.getInstance());
+        int tmpNumberOfSettings = 17;
         this.settings = new ArrayList<>(tmpNumberOfSettings);
         int tmpInitialCapacityForSettingNameTooltipTextMap = CollectionUtil.calculateInitialHashCollectionCapacity(
                 tmpNumberOfSettings,
@@ -647,6 +662,22 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
                 Message.get("SugarRemovalUtilityFragmenter.detectCircularSugarsWithKetoGroupsSetting.tooltip"));
         this.settingNameDisplayNameMap.put(this.detectCircularSugarsWithKetoGroupsSetting.getName(),
                 Message.get("SugarRemovalUtilityFragmenter.detectCircularSugarsWithKetoGroupsSetting.displayName"));
+        this.markAttachPointsByRSetting = new SimpleBooleanProperty(this,
+                "Mark attachment points by R setting",
+                SugarRemovalUtilityFragmenter.MARK_ATTACH_POINTS_BY_R_DEFAULT);
+        this.settings.add(markAttachPointsByRSetting);
+        this.settingNameTooltipTextMap.put(this.markAttachPointsByRSetting.getName(),
+                Message.get("SugarRemovalUtilityFragmenter.markAttachPointsByRSetting.tooltip"));
+        this.settingNameDisplayNameMap.put(this.markAttachPointsByRSetting.getName(),
+                Message.get("SugarRemovalUtilityFragmenter.markAttachPointsByRSetting.displayName"));
+        this.postProcessSugarsSetting = new SimpleBooleanProperty(this,
+                "Post-process sugars setting",
+                SugarRemovalUtilityFragmenter.POST_PROCESS_SUGARS_DEFAULT);
+        this.settings.add(postProcessSugarsSetting);
+        this.settingNameTooltipTextMap.put(this.postProcessSugarsSetting.getName(),
+                Message.get("SugarRemovalUtilityFragmenter.postProcessSugarsSetting.tooltip"));
+        this.settingNameDisplayNameMap.put(this.postProcessSugarsSetting.getName(),
+                Message.get("SugarRemovalUtilityFragmenter.postProcessSugarsSetting.displayName"));
     }
     //</editor-fold>
     //
@@ -913,6 +944,42 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
     public SimpleBooleanProperty detectCircularSugarsWithKetoGroupsSettingProperty() {
         return this.detectCircularSugarsWithKetoGroupsSetting;
     }
+
+    /**
+     * Returns the current state of the mark attachment points by R setting.
+     *
+     * @return true if broken bonds should be marked by pseudo atoms in the returned sugar fragments and aglycone
+     */
+    public boolean getMarkAttachPointsByRSetting() {
+        return this.markAttachPointsByRSetting.get();
+    }
+
+    /**
+     * Returns the property object of the mark attachment points by R setting that can be used to configure this setting.
+     *
+     * @return property object of the mark attachment points by R setting
+     */
+    public SimpleBooleanProperty markAttachPointsByRSettingProperty() {
+        return this.markAttachPointsByRSetting;
+    }
+
+    /**
+     * Returns the current state of the post-process sugars setting.
+     *
+     * @return true if the sugar moieties should be post-processed after removal
+     */
+    public boolean getPostProcessSugarsSetting() {
+        return this.postProcessSugarsSetting.get();
+    }
+
+    /**
+     * Returns the property object of the post-process sugars setting that can be used to configure this setting.
+     *
+     * @return property object of the post-process sugars setting
+     */
+    public SimpleBooleanProperty postProcessSugarsSettingProperty() {
+        return this.postProcessSugarsSetting;
+    }
     //</editor-fold>
     //
     //<editor-fold desc="Public properties set">
@@ -1080,6 +1147,25 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
         //synchronisation with SRU instance done in overridden set() method
         this.detectCircularSugarsWithKetoGroupsSetting.set(aBoolean);
     }
+
+    /**
+     * Sets the mark attachment points by R setting, defining whether broken bonds in sugar and aglycone
+     * fragments should be marked by pseudo atoms with the label 'R'.
+     *
+     * @param aBoolean true, if attachment points should be marked by 'R' labels
+     */
+    public void setMarkAttachPointsByRSetting(boolean aBoolean) {
+        this.markAttachPointsByRSetting.set(aBoolean);
+    }
+
+    /**
+     * Sets the post-process sugars setting, defining whether the sugar moieties should be post-processed after extraction.
+     *
+     * @param aBoolean true, if the sugar moieties should be post-processed
+     */
+    public void setPostProcessSugarsSetting(boolean aBoolean) {
+        this.postProcessSugarsSetting.set(aBoolean);
+    }
     //</editor-fold>
     //
     //<editor-fold desc="IMoleculeFragmenter methods">
@@ -1144,6 +1230,8 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
         tmpCopy.setDetectLinearAcidicSugarsSetting(this.detectLinearAcidicSugarsSetting.get());
         tmpCopy.setDetectSpiroRingsAsCircularSugarsSetting(this.detectSpiroRingsAsCircularSugarsSetting.get());
         tmpCopy.setDetectCircularSugarsWithKetoGroupsSetting(this.detectCircularSugarsWithKetoGroupsSetting.get());
+        tmpCopy.setMarkAttachPointsByRSetting(this.markAttachPointsByRSetting.get());
+        tmpCopy.setPostProcessSugarsSetting(this.postProcessSugarsSetting.get());
         return tmpCopy;
     }
 
@@ -1165,6 +1253,8 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
         this.detectLinearAcidicSugarsSetting.set(this.sugarRUInstance.areLinearAcidicSugarsDetected());
         this.detectSpiroRingsAsCircularSugarsSetting.set(this.sugarRUInstance.areSpiroRingsDetectedAsCircularSugars());
         this.detectCircularSugarsWithKetoGroupsSetting.set(this.sugarRUInstance.areCircularSugarsWithKetoGroupsDetected());
+        this.markAttachPointsByRSetting.set(SugarRemovalUtilityFragmenter.MARK_ATTACH_POINTS_BY_R_DEFAULT);
+        this.postProcessSugarsSetting.set(SugarRemovalUtilityFragmenter.POST_PROCESS_SUGARS_DEFAULT);
     }
 
     @Override
@@ -1180,11 +1270,11 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
         try {
             tmpFragments = switch (tmpOption) {
                 case SugarTypeToRemoveOption.CIRCULAR ->
-                        this.sugarRUInstance.removeAndReturnCircularSugars(tmpMoleculeClone);
+                        this.sugarRUInstance.copyAndExtractAglyconeAndSugars(tmpMoleculeClone, true, false, this.markAttachPointsByRSetting.get(), this.postProcessSugarsSetting.get());
                 case SugarTypeToRemoveOption.LINEAR ->
-                        this.sugarRUInstance.removeAndReturnLinearSugars(tmpMoleculeClone);
+                        this.sugarRUInstance.copyAndExtractAglyconeAndSugars(tmpMoleculeClone, false, true, this.markAttachPointsByRSetting.get(), this.postProcessSugarsSetting.get());
                 case SugarTypeToRemoveOption.CIRCULAR_AND_LINEAR ->
-                        this.sugarRUInstance.removeAndReturnCircularAndLinearSugars(tmpMoleculeClone);
+                        this.sugarRUInstance.copyAndExtractAglyconeAndSugars(tmpMoleculeClone, true, true, this.markAttachPointsByRSetting.get(), this.postProcessSugarsSetting.get());
                 default ->
                         throw new IllegalStateException("Unexpected value: " + this.sugarTypeToRemoveSetting.get());
             };
