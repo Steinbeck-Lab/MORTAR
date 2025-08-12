@@ -9,6 +9,7 @@
 [![Software Article - JChemInf](https://img.shields.io/badge/Software_Article-JChemInf-blue)](https://doi.org/10.1186/s13321-022-00674-9)
 [![Tutorial - Tutorial folder](https://img.shields.io/badge/Tutorial-Tutorial_folder-2ea44f)](https://github.com/FelixBaensch/MORTAR/tree/main/Tutorial)
 [![Tutorial - Online](https://img.shields.io/badge/Tutorial-Online-2ea44f)](https://felixbaensch.github.io/MORTAR/Tutorial/MORTAR_Tutorial.pdf)
+[![Download_statistics - GitHub_Release_Stats_by_tooomm](https://img.shields.io/badge/Download_statistics-GitHub_Release_Stats_by_tooomm-blue)](https://tooomm.github.io/github-release-stats/?username=FelixBaensch&repository=MORTAR)
 
 ![MORTAR_logo](./Images/Mortar_Logo1_cut.png)
 # MOlecule fRagmenTAtion fRamework (MORTAR)
@@ -199,10 +200,13 @@ into it (i.e. sub-folders of "AdoptOpenJDK\jdk-21.0.1_12_jre\" need to be "bin",
 
 ## Citation
 You can cite this software or this repository as it is defined in the CITATION.cff file. Also, please cite our scientific 
-article (<a href= "https://doi.org/10.1186/s13321-022-00674-9"> MORTAR: a rich client application for in silico molecule 
-fragmentation (Baensch et al. 2023)).
+article (<a href= "https://doi.org/10.1186/s13321-022-00674-9">MORTAR: a rich client application for in silico molecule 
+fragmentation (Baensch et al. 2023)</a>).
 
 ## References and useful links
+
+<p><b>MORTAR Download statistics:</b> <a href= "https://tooomm.github.io/github-release-stats/?username=FelixBaensch&repository=MORTAR">GitHub Release Stats by tooomm</a></p>
+
 **Ertl algorithm**
 * [Ertl P. An algorithm to identify functional groups in organic molecules. J Cheminform. 2017; 9:36.](https://doi.org/10.1186/s13321-017-0225-z)
 * [Fritsch S, Neumann S, Schaub J, Steinbeck C, Zielesny A. ErtlFunctionalGroupsFinder: automated rule-based functional group detection with the Chemistry Development Kit (CDK). J Cheminform. 2019; 11:37](https://doi.org/10.1186/s13321-019-0361-8)
