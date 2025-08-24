@@ -6,9 +6,10 @@
 
 name: Cross-Platform Deployment
 on:
-  # TODO: The workflow triggers need to be changed to the correct values
   push:
-    branches: [ "GitHub_Actions_Development" ]
+    branches: [ "main", "production" ]
+  pull_request:
+    branches: [ "main", "production" ]
 
 jobs:
   build-windows:
