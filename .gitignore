@@ -50,6 +50,6 @@ AdoptOpenJDK.zip
 # Scaffold Generator test output
 /scaffoldTestOutput
 
-# buildSrc directory
-/buildSrc/build
-/buildSrc/.kotlin
+# build-logic directory
+/build-logic/build
+/build-logic/.kotlin

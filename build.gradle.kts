@@ -6,7 +6,14 @@ plugins {
     id("application")
     alias(libs.plugins.javafxplugin)
     alias(libs.plugins.spotless)
+    id("mortar.deploy.linux")
+    id("mortar.deploy.mac")
+    id("mortar.deploy.win")
+    id("mortar.start.scripts")
 }
+
+group = providers.gradleProperty("appGroup").get()
+version = providers.gradleProperty("appVersion").get()
 
 // Creates javadoc and sources jars
 java {
@@ -17,19 +24,18 @@ java {
 
 repositories {
     mavenCentral()
-    maven {
-        // CDK SNAPSHOT repository: Using CDK 2.11 snapshot release to get FunctionalGroupsFinder
-        // that also copies atomic charges
-        url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots")
-    }
+    // CDK SNAPSHOT repository, this was needed to get the CDK 2.11 snapshot release to get
+    // FunctionalGroupsFinder that also copies atomic charges
+    //
+    // If needed again, uncomment the following line:
+    // maven { url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots") }
 }
 
 dependencies {
-    implementation(libs.annotations)
     testImplementation(platform(libs.junit))
     testImplementation(libs.jupiter)
     //<editor-fold desc="CDK dependencies">
-    implementation(libs.cdkBundle)
+    // implementation(libs.cdkBundle)
     implementation(libs.cdkPdb)
     implementation(libs.cdkSilent)
     implementation(libs.cdkExtra)
@@ -85,63 +91,6 @@ tasks.test {
         )
     }
 }
-
-//<editor-fold desc="Start script tasks">
-/**
- * Creates a Gradle task to generate start scripts for the MORTAR application.
- *
- * @param aTaskName a name for the task that gets created
- * @param aScriptFilename a name for the start script that gets generated
- * @param aMortarOptimizationVariable a variable to be used for optimization in the start scripts
- * @param aHeapSize the heap size to be set for the JVM, e.g., "4g" or "20g"
- * @return a `TaskProvider<CreateStartScripts>` that represents the created task
- */
-fun createMortarStartScriptTask(
-    aTaskName: String,
-    aScriptFilename: String,
-    aMortarOptimizationVariable: String,
-    aHeapSize: String
-): TaskProvider<CreateStartScripts> {
-    return tasks.register(aTaskName, CreateStartScripts::class) {
-        mainClass.set(providers.gradleProperty("mainClassName").get())
-        classpath = tasks.startScripts.get().classpath
-        outputDir = file("build/scripts")
-        applicationName = aScriptFilename
-        defaultJvmOpts = listOf("-Xms$aHeapSize", "-Xmx$aHeapSize")
-
-        doLast {
-            modifyMortarStartScripts(windowsScript, unixScript, aMortarOptimizationVariable)
-        }
-    }
-}
-
-val mortarStandardMemory = createMortarStartScriptTask(
-    "mortarStandardMemory",
-    "MORTAR",
-    providers.gradleProperty("defaultMemoryOptimization").get(),
-    providers.gradleProperty("defaultHeapSize").get()
-)
-val mortarHighMemory = createMortarStartScriptTask(
-    "mortarHighMemory",
-    "MORTAR_20GB",
-    providers.gradleProperty("highMemoryOptimization").get(),
-    providers.gradleProperty("highHeapSize").get()
-)
-
-// This task is needed to correctly modify the start scripts for the installDist task
-tasks.named<CreateStartScripts>("startScripts") {
-    applicationName = "MORTAR"  // This will create MORTAR.bat and MORTAR (Unix)
-
-    val defaultHeapSize = providers.gradleProperty("defaultHeapSize").get()
-    val defaultMemoryOptimization = providers.gradleProperty("defaultMemoryOptimization").get()
-
-    defaultJvmOpts = listOf("-Xms$defaultHeapSize", "-Xmx$defaultHeapSize")
-
-    doLast {
-        modifyMortarStartScripts(windowsScript, unixScript, defaultMemoryOptimization)
-    }
-}
-//</editor-fold>
 
 //<editor-fold desc="FatJar tasks">
 /**
@@ -224,7 +173,7 @@ distributions {
             // Use lazy file collections for better performance
             into("bin") {
                 duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-                from(mortarHighMemory)
+                from(tasks.named<CreateStartScripts>("mortarHighMemory"))
                 fileMode = 0b111_101_101 // 0755 in binary
             }
             from(layout.projectDirectory.dir("AdoptOpenJDK")) {
@@ -236,6 +185,7 @@ distributions {
         }
     }
 }
+
 
 spotless {
     java {
