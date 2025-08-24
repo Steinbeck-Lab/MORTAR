@@ -50,7 +50,7 @@ fun modifyMortarStartScripts(aWindowsFile: File, anUnixFile: File, aMortarOptimi
     //<editor-fold desc="checks">
     val tmpOldStartupString: String = when (aMortarOptimizationVariable) {
         "%MORTAR_OPTS%" -> {
-            "\"%JAVA_EXE%\" %DEFAULT_JVM_OPTS% %JAVA_OPTS% $aMortarOptimizationVariable  -classpath \"%CLASSPATH%\"  %*"
+            "\"%JAVA_EXE%\" %DEFAULT_JVM_OPTS% %JAVA_OPTS% $aMortarOptimizationVariable  -classpath \"%CLASSPATH%\" de.unijena.cheminf.mortar.main.Main %*"
         }
         "%MORTAR_20_GB_OPTS%" -> {
             "\"%JAVA_EXE%\" %DEFAULT_JVM_OPTS% %JAVA_OPTS% $aMortarOptimizationVariable  -classpath \"%CLASSPATH%\" de.unijena.cheminf.mortar.main.Main %*"
