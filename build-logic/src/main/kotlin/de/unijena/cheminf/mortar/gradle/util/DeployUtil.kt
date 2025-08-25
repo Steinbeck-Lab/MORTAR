@@ -42,6 +42,20 @@ import java.util.zip.ZipInputStream
  * @author Martin Urban
  */
 object DeployUtil {
+    //<editor-fold desc="private class variables">
+    /**
+     * Holds the name of the operating system on which the code is running.
+     *
+     * The value is fetched from the "os.name" system property, making it
+     * dependent on the underlying platform and Java's system property
+     * value for OS identification.
+     *
+     * This property can be useful for determining the operating system
+     * type to apply platform-specific configurations or logic.
+     */
+    private val osName: String = System.getProperty("os.name")
+    //</editor-fold>
+    //
     //<editor-fold desc="network utilities">
     /**
      * Downloads a file from the specified URL and saves it to the target location.
@@ -132,21 +146,21 @@ object DeployUtil {
      *
      * @return true if the OS name contains "Windows", false otherwise
      */
-    fun isWindows(): Boolean = System.getProperty("os.name").contains(MortarBundle.message(PropertyNames.OS_WIN), true)
+    fun isWindows(): Boolean = osName.contains(MortarBundle.message(PropertyNames.OS_WIN), true)
 
     /**
      * Checks if the current operating system is macOS.
      *
      * @return true if the OS name contains "Mac", false otherwise
      */
-    fun isMac(): Boolean = System.getProperty("os.name").contains(MortarBundle.message(PropertyNames.OS_MAC), ignoreCase = true)
+    fun isMac(): Boolean = osName.contains(MortarBundle.message(PropertyNames.OS_MAC), ignoreCase = true)
 
     /**
      * Checks if the current operating system is Linux.
      *
      * @return true if the OS name contains "Linux", false otherwise
      */
-    fun isLinux(): Boolean = System.getProperty("os.name").contains(MortarBundle.message(PropertyNames.OS_LINUX), ignoreCase = true)
+    fun isLinux(): Boolean = osName.contains(MortarBundle.message(PropertyNames.OS_LINUX), ignoreCase = true)
     //</editor-fold>
     //
     //<editor-fold desc="deployment utilities">

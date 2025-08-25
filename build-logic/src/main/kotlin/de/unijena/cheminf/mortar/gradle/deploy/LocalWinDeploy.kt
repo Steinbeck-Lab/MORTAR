@@ -145,8 +145,12 @@ open class LocalWinDeploy : DefaultTask() {
         val tmpWinDeployDir = File(tmpBuildDir, "winDeploy")
 
         // Remove unnecessary unix start scripts
-        File(tmpInstallDir, "bin/MORTAR").delete()
-        File(tmpInstallDir, "bin/MORTAR_20GB").delete()
+        if (!File(tmpInstallDir, "bin/MORTAR").delete()) {
+            logger.lifecycle("Unix MORTAR start script not deleted, this can have several reasons, like not running clean before deploy.")
+        }
+        if (!File(tmpInstallDir, "bin/MORTAR_20GB").delete()) {
+            logger.lifecycle("Unix MORTAR start script not deleted, this can have several reasons, like not running clean before deploy.")
+        }
 
         DeployUtil.copyDir(File(tmpInstallDir, "bin"), File(tmpWinDeployDir, "in/bin"))
         DeployUtil.copyDir(File(tmpInstallDir, "lib"), File(tmpWinDeployDir, "in/lib"))
@@ -199,15 +203,9 @@ open class LocalWinDeploy : DefaultTask() {
         val tmpScriptFile = tmpWinDeployDir.listFiles()?.firstOrNull { it.extension == "iss" }
             ?: throw RuntimeException("No .iss script found in winDeploy directory")
 
-        // Determine the version from the Inno Setup script's #define at the top (fallback to Gradle project.version)
-        val scriptText = tmpScriptFile.readText()
-        val versionRegex = Regex("#define\\s+thisAppVersion\\s+\"([^\"]+)\"")
-        val parsedVersionMatch = versionRegex.find(scriptText)
-        val appVersion = parsedVersionMatch?.groupValues?.get(1) ?: project.version.toString()
-
+        val appVersion = MortarBundle.message(PropertyNames.APP_VERSION)
         // Resolve AppId from YAML (create file and mapping if missing)
         val appGuid = getOrCreateAppIdForVersion(appVersion)
-
         // Call Inno Setup, passing both defines via command line
         project.exec {
             workingDir = tmpWinDeployDir
@@ -263,7 +261,7 @@ open class LocalWinDeploy : DefaultTask() {
             if (tmpIdx > 0) {
                 val tmpKey = trimmed.substring(0, tmpIdx).trim()
                 val tmpValue = trimmed.substring(tmpIdx + 1).trim().trim('"')
-                if (tmpKey.isNotEmpty() && tmpValue.isNotEmpty()) tmpIds[tmpKey] = tmpValue
+                if (tmpKey.isNotEmpty() && tmpValue.isNotEmpty()) tmpIds.set(tmpKey, tmpValue)
             }
         }
         return tmpIds
@@ -323,7 +321,8 @@ open class LocalWinDeploy : DefaultTask() {
     */
     private fun downloadJRE() {
         val tmpBuildDir = project.layout.buildDirectory.asFile.get()
-        val tmpJreDeploymentDir = File(tmpBuildDir, "winDeploy/in/" + MortarBundle.message(PropertyNames.LOCAL_DEPLOY_WIN_JRE_DIR_NAME))
+        val tmpInnoSetupInputDir = File(tmpBuildDir, "winDeploy/in/")
+        val tmpJreDeploymentDir = File(tmpInnoSetupInputDir, MortarBundle.message(PropertyNames.LOCAL_DEPLOY_WIN_JRE_DIR_NAME))
 
         if (tmpJreDeploymentDir.exists() && tmpJreDeploymentDir.listFiles()?.isNotEmpty() == true) {
             logger.lifecycle("JRE already exists, skipping download")
@@ -333,13 +332,12 @@ open class LocalWinDeploy : DefaultTask() {
         logger.lifecycle("Downloading JRE...")
         val tmpTempDir = File(tmpBuildDir, "tmp")
         val tmpJreZip = File(tmpTempDir, "jre.zip")
-        val tmpInnoInputsDir = File(tmpBuildDir, "winDeploy/in")
-        val tmpInnoInputsJreExtractDir = File(tmpBuildDir, "winDeploy/in/" + MortarBundle.message(PropertyNames.LOCAL_DEPLOY_WIN_JRE_EXTRACTED_DIR_NAME))
-        val tmpInnoInputsJreDir = File(tmpBuildDir, "winDeploy/in/" + MortarBundle.message(PropertyNames.LOCAL_DEPLOY_WIN_JRE_DIR_NAME))
+        val tmpInnoInputsJreExtractDir = File(tmpInnoSetupInputDir, MortarBundle.message(PropertyNames.LOCAL_DEPLOY_WIN_JRE_EXTRACTED_DIR_NAME))
+        val tmpInnoInputsJreDir = File(tmpInnoSetupInputDir, MortarBundle.message(PropertyNames.LOCAL_DEPLOY_WIN_JRE_DIR_NAME))
 
         try {
             DeployUtil.downloadFile(MortarBundle.message(PropertyNames.LOCAL_DEPLOY_WIN_JRE_URL), tmpJreZip)
-            DeployUtil.extractZip(tmpJreZip, tmpInnoInputsDir)
+            DeployUtil.extractZip(tmpJreZip, tmpInnoSetupInputDir)
             tmpInnoInputsJreExtractDir.renameTo(tmpInnoInputsJreDir)
             tmpJreZip.delete()
             logger.lifecycle("JRE download completed")

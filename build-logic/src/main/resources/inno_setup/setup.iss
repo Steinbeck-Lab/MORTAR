@@ -1,10 +1,5 @@
 #define thisAppName "MORTAR"
-;#ifndef thisAppVersion
-;  #define thisAppVersion "1.4.0.0"
-;#endif
-;#ifndef thisAppId
-;  #define thisAppId "00000000-0000-0000-0000-000000000000"
-;#endif
+
 [Setup]
 WizardStyle=modern
 AppName={#thisAppName}

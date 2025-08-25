@@ -92,8 +92,7 @@ fun modifyMortarStartScripts(aWindowsFile: File, anUnixFile: File, aMortarOptimi
     //
     //<editor-fold desc="Unix script edits">
     anUnixFile.writeText(
-        anUnixFile.readText()
-            .replace(Regex("CLASSPATH=\$APP_HOME/lib.*"), "CLASSPATH=\$APP_HOME/lib/*")
+        anUnixFile.readText().replace(Regex("CLASSPATH=\\\$APP_HOME/lib.*"), "CLASSPATH=\\\$APP_HOME/lib/*")
     )
     //</editor-fold>
 }

@@ -130,7 +130,6 @@ fun createFatJarTask(
     })
 
     with(tasks.jar.get())
-
     // Benefits: Faster JAR creation, smaller metadata overhead, better build cache hits
     // Enables reproducible builds (same inputs = identical outputs)
     isPreserveFileTimestamps = false
@@ -167,6 +166,11 @@ artifacts {
     add("fatJars", fatJarAarch64)
 }
 
+// Setting the main class for the application plugin so that the Gradle run task runs as expected
+application {
+    mainClass.set(providers.gradleProperty("mainClassName"))
+}
+
 distributions {
     main {
         contents {
@@ -185,7 +189,6 @@ distributions {
         }
     }
 }
-
 
 spotless {
     java {

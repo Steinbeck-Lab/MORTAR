@@ -70,7 +70,7 @@ open class LocalMacDeploy : DefaultTask() {
         val iconFile = File(project.rootDir, MortarBundle.message(PropertyNames.ICON_PATH_MAC))
         require(iconFile.exists()) { "Icon file not found: ${iconFile.absolutePath}" }
 
-        val jarName = if (arch.equals("arm", ignoreCase = true))
+        val jarName = if (arch == "arm")
             "$appName-fat-aarch64-$appVersion.jar"
         else
             "$appName-fat-$appVersion.jar"
