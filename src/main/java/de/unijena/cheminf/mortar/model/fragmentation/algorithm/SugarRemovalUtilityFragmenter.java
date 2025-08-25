@@ -56,6 +56,7 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+//TODO: fragment saturation setting and new SDU saturation setting are in conflict with each other!
 /**
  * Wrapper class that makes the
  * <a href="https://doi.org/10.1186/s13321-020-00467-y">Sugar Removal Utility for in-silico deglycosylation</a>
