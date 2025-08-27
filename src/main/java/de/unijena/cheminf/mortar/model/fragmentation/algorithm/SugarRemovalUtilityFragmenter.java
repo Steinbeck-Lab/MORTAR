@@ -56,7 +56,6 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-//TODO: fragment saturation setting and new SDU saturation setting are in conflict with each other!
 /**
  * Wrapper class that makes the
  * <a href="https://doi.org/10.1186/s13321-020-00467-y">Sugar Removal Utility for in-silico deglycosylation</a>
@@ -289,6 +288,11 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
      * bonds between circular sugars and ether, ester, and peroxide bonds between linear sugars should be split.
      */
     public static final boolean POST_PROCESS_SUGARS_DEFAULT = false;
+
+    /**
+     * Default for whether small substituents should not be split from the extracted sugars in postprocessing.
+     */
+    public static final boolean LIMIT_POSTPROCESSING_BY_SIZE_SETTING_DEFAULT = true;
     //</editor-fold>
     //
     //<editor-fold desc="Private final variables">
@@ -333,6 +337,8 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
 
     private final SimpleBooleanProperty postProcessSugarsSetting;
 
+    private final SimpleBooleanProperty limitPostprocessingBySizeSetting;
+
     /**
      * All settings of this fragmenter, encapsulated in JavaFX properties for binding in GUI.
      */
@@ -360,7 +366,7 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
      */
     public SugarRemovalUtilityFragmenter() {
         this.sugarDUInstance = new SugarDetectionUtility(SilentChemObjectBuilder.getInstance());
-        int tmpNumberOfSettings = 17;
+        int tmpNumberOfSettings = 18;
         this.settings = new ArrayList<>(tmpNumberOfSettings);
         int tmpInitialCapacityForSettingNameTooltipTextMap = CollectionUtil.calculateInitialHashCollectionCapacity(
                 tmpNumberOfSettings,
@@ -389,6 +395,14 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
                 Message.get("SugarRemovalUtilityFragmenter.returnedFragmentsSetting.tooltip"));
         this.settingNameDisplayNameMap.put(this.returnedFragmentsSetting.getName(),
                 Message.get("SugarRemovalUtilityFragmenter.returnedFragmentsSetting.displayName"));
+        this.markAttachPointsByRSetting = new SimpleBooleanProperty(this,
+                "Mark attachment points by R setting",
+                SugarRemovalUtilityFragmenter.MARK_ATTACH_POINTS_BY_R_DEFAULT);
+        this.settings.add(markAttachPointsByRSetting);
+        this.settingNameTooltipTextMap.put(this.markAttachPointsByRSetting.getName(),
+                Message.get("SugarRemovalUtilityFragmenter.markAttachPointsByRSetting.tooltip"));
+        this.settingNameDisplayNameMap.put(this.markAttachPointsByRSetting.getName(),
+                Message.get("SugarRemovalUtilityFragmenter.markAttachPointsByRSetting.displayName"));
         this.fragmentSaturationSetting = new SimpleIDisplayEnumConstantProperty(this, "Fragment saturation setting",
                 IMoleculeFragmenter.FRAGMENT_SATURATION_OPTION_DEFAULT, IMoleculeFragmenter.FragmentSaturationOption.class) {
             @Override
@@ -406,11 +420,12 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
                 }
             }
         };
-        this.settings.add(this.fragmentSaturationSetting);
-        this.settingNameTooltipTextMap.put(this.fragmentSaturationSetting.getName(),
-                Message.get("SugarRemovalUtilityFragmenter.fragmentSaturationSetting.tooltip"));
-        this.settingNameDisplayNameMap.put(this.fragmentSaturationSetting.getName(),
-                Message.get("SugarRemovalUtilityFragmenter.fragmentSaturationSetting.displayName"));
+        //To do: this needs to be done properly, by re-introducing the R saturation option
+//        this.settings.add(this.fragmentSaturationSetting);
+//        this.settingNameTooltipTextMap.put(this.fragmentSaturationSetting.getName(),
+//                Message.get("SugarRemovalUtilityFragmenter.fragmentSaturationSetting.tooltip"));
+//        this.settingNameDisplayNameMap.put(this.fragmentSaturationSetting.getName(),
+//                Message.get("SugarRemovalUtilityFragmenter.fragmentSaturationSetting.displayName"));
         this.sugarTypeToRemoveSetting = new SimpleIDisplayEnumConstantProperty(this, "Sugar type to remove setting",
                 SugarRemovalUtilityFragmenter.SUGAR_TYPE_TO_REMOVE_OPTION_DEFAULT,
                 SugarRemovalUtilityFragmenter.SugarTypeToRemoveOption.class) {
@@ -497,7 +512,7 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
                 try {
                     //throws IllegalArgumentException
                     SugarRemovalUtilityFragmenter.this.sugarDUInstance.setPreservationModeThresholdSetting(newValue);
-                }catch(IllegalArgumentException anException){
+                } catch(IllegalArgumentException anException){
                     SugarRemovalUtilityFragmenter.LOGGER.log(Level.WARNING, anException.toString(), anException);
                     GuiUtil.guiExceptionAlert(Message.get("Fragmenter.IllegalSettingValue.Title"),
                             Message.get("Fragmenter.IllegalSettingValue.Header"),
@@ -663,14 +678,6 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
                 Message.get("SugarRemovalUtilityFragmenter.detectCircularSugarsWithKetoGroupsSetting.tooltip"));
         this.settingNameDisplayNameMap.put(this.detectCircularSugarsWithKetoGroupsSetting.getName(),
                 Message.get("SugarRemovalUtilityFragmenter.detectCircularSugarsWithKetoGroupsSetting.displayName"));
-        this.markAttachPointsByRSetting = new SimpleBooleanProperty(this,
-                "Mark attachment points by R setting",
-                SugarRemovalUtilityFragmenter.MARK_ATTACH_POINTS_BY_R_DEFAULT);
-        this.settings.add(markAttachPointsByRSetting);
-        this.settingNameTooltipTextMap.put(this.markAttachPointsByRSetting.getName(),
-                Message.get("SugarRemovalUtilityFragmenter.markAttachPointsByRSetting.tooltip"));
-        this.settingNameDisplayNameMap.put(this.markAttachPointsByRSetting.getName(),
-                Message.get("SugarRemovalUtilityFragmenter.markAttachPointsByRSetting.displayName"));
         this.postProcessSugarsSetting = new SimpleBooleanProperty(this,
                 "Post-process sugars setting",
                 SugarRemovalUtilityFragmenter.POST_PROCESS_SUGARS_DEFAULT);
@@ -679,6 +686,14 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
                 Message.get("SugarRemovalUtilityFragmenter.postProcessSugarsSetting.tooltip"));
         this.settingNameDisplayNameMap.put(this.postProcessSugarsSetting.getName(),
                 Message.get("SugarRemovalUtilityFragmenter.postProcessSugarsSetting.displayName"));
+        this.limitPostprocessingBySizeSetting = new SimpleBooleanProperty(this,
+                "Limit postprocessing by size setting",
+                SugarRemovalUtilityFragmenter.LIMIT_POSTPROCESSING_BY_SIZE_SETTING_DEFAULT);
+        this.settings.add(limitPostprocessingBySizeSetting);
+        this.settingNameTooltipTextMap.put(this.limitPostprocessingBySizeSetting.getName(),
+                Message.get("SugarRemovalUtilityFragmenter.limitPostprocessingBySizeSetting.tooltip"));
+        this.settingNameDisplayNameMap.put(this.limitPostprocessingBySizeSetting.getName(),
+                Message.get("SugarRemovalUtilityFragmenter.limitPostprocessingBySizeSetting.displayName"));
     }
     //</editor-fold>
     //
@@ -981,6 +996,24 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
     public SimpleBooleanProperty postProcessSugarsSettingProperty() {
         return this.postProcessSugarsSetting;
     }
+
+    /**
+     * Returns the current state of the limit postprocessing by size setting.
+     *
+     * @return true if the post-processing of sugar moieties should be limited to those bigger than a certain size
+     */
+    public boolean getLimitPostprocessingBySizeSetting() {
+        return this.limitPostprocessingBySizeSetting.get();
+    }
+
+    /**
+     * Returns the property object of the limit postprocessing by size setting that can be used to configure this setting.
+     *
+     * @return property object of the limit postprocessing by size setting
+     */
+    public SimpleBooleanProperty limitPostprocessingBySizeSettingProperty() {
+        return this.limitPostprocessingBySizeSetting;
+    }
     //</editor-fold>
     //
     //<editor-fold desc="Public properties set">
@@ -1167,6 +1200,16 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
     public void setPostProcessSugarsSetting(boolean aBoolean) {
         this.postProcessSugarsSetting.set(aBoolean);
     }
+
+    /**
+     * Sets the limit postprocessing by size setting, defining whether the post-processing of sugar moieties should be
+     * limited to those bigger than a certain size.
+     *
+     * @param aBoolean true, if the post-processing of sugar moieties should be limited to those bigger than a certain size
+     */
+    public void setLimitPostprocessingBySizeSetting(boolean aBoolean) {
+        this.limitPostprocessingBySizeSetting.set(aBoolean);
+    }
     //</editor-fold>
     //
     //<editor-fold desc="IMoleculeFragmenter methods">
@@ -1233,6 +1276,7 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
         tmpCopy.setDetectCircularSugarsWithKetoGroupsSetting(this.detectCircularSugarsWithKetoGroupsSetting.get());
         tmpCopy.setMarkAttachPointsByRSetting(this.markAttachPointsByRSetting.get());
         tmpCopy.setPostProcessSugarsSetting(this.postProcessSugarsSetting.get());
+        tmpCopy.setLimitPostprocessingBySizeSetting(this.limitPostprocessingBySizeSetting.get());
         return tmpCopy;
     }
 
@@ -1256,6 +1300,7 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
         this.detectCircularSugarsWithKetoGroupsSetting.set(this.sugarDUInstance.areCircularSugarsWithKetoGroupsDetected());
         this.markAttachPointsByRSetting.set(SugarRemovalUtilityFragmenter.MARK_ATTACH_POINTS_BY_R_DEFAULT);
         this.postProcessSugarsSetting.set(SugarRemovalUtilityFragmenter.POST_PROCESS_SUGARS_DEFAULT);
+        this.limitPostprocessingBySizeSetting.set(SugarRemovalUtilityFragmenter.LIMIT_POSTPROCESSING_BY_SIZE_SETTING_DEFAULT);
     }
 
     @Override
@@ -1271,11 +1316,11 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
         try {
             tmpFragments = switch (tmpOption) {
                 case SugarTypeToRemoveOption.CIRCULAR ->
-                        this.sugarDUInstance.copyAndExtractAglyconeAndSugars(tmpMoleculeClone, true, false, this.markAttachPointsByRSetting.get(), this.postProcessSugarsSetting.get());
+                        this.sugarDUInstance.copyAndExtractAglyconeAndSugars(tmpMoleculeClone, true, false, this.markAttachPointsByRSetting.get(), this.postProcessSugarsSetting.get(), this.limitPostprocessingBySizeSetting.get());
                 case SugarTypeToRemoveOption.LINEAR ->
-                        this.sugarDUInstance.copyAndExtractAglyconeAndSugars(tmpMoleculeClone, false, true, this.markAttachPointsByRSetting.get(), this.postProcessSugarsSetting.get());
+                        this.sugarDUInstance.copyAndExtractAglyconeAndSugars(tmpMoleculeClone, false, true, this.markAttachPointsByRSetting.get(), this.postProcessSugarsSetting.get(), this.limitPostprocessingBySizeSetting.get());
                 case SugarTypeToRemoveOption.CIRCULAR_AND_LINEAR ->
-                        this.sugarDUInstance.copyAndExtractAglyconeAndSugars(tmpMoleculeClone, true, true, this.markAttachPointsByRSetting.get(), this.postProcessSugarsSetting.get());
+                        this.sugarDUInstance.copyAndExtractAglyconeAndSugars(tmpMoleculeClone, true, true, this.markAttachPointsByRSetting.get(), this.postProcessSugarsSetting.get(), this.limitPostprocessingBySizeSetting.get());
                 default ->
                         throw new IllegalStateException("Unexpected value: " + this.sugarTypeToRemoveSetting.get());
             };
