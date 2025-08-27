@@ -28,13 +28,13 @@ import de.unijena.cheminf.mortar.gradle.bundle.PropertyKey
 
 // Auto-generated at build time - do not edit!
 // Generated from: MortarBundle.properties
-// Generated at: 2025-08-25T21:11:34.962541400
+// Generated at: 2025-08-25T21:10:35.549745300
 
 object PropertyNames {
     /** 
      * Key for the app version property.
      * 
-     * Property value: 1.4.0.1
+     * Property value: 1.4.0.0
      */
     val APP_VERSION = PropertyKey("app.version")
 

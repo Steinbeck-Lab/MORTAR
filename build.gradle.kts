@@ -180,9 +180,7 @@ distributions {
                 from(tasks.named<CreateStartScripts>("mortarHighMemory"))
                 fileMode = 0b111_101_101 // 0755 in binary
             }
-            from(layout.projectDirectory.dir("AdoptOpenJDK")) {
-                into("jdk")
-            }
+            from(layout.projectDirectory.dir("AdoptOpenJDK"))
             into("tutorial") {
                 from(layout.projectDirectory.dir("Tutorial"))
             }
