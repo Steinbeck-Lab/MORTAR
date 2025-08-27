@@ -58,7 +58,7 @@ import java.util.Map;
  * </p>
  *
  * @author Jonas Schaub
- * @version 2025-08-22
+ * @version 2025-08-27
  */
 class SugarDetectionUtilityTest {
     /**
