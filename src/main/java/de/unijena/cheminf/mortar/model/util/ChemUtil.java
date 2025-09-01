@@ -398,10 +398,10 @@ public final class ChemUtil {
             //fix properties of the atoms that are radicals
             for (ISingleElectron tmpSingleElectron : aMolecule.singleElectrons()) {
                 IAtom tmpAtom = tmpSingleElectron.getAtom();
-                //setting to null now, will be re-detected correctly below
+                //setting to null now, will be re-detected correctly by AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(aMolecule) below
                 tmpAtom.setHybridization(null);
-                tmpAtom.setValency(tmpAtom.getValency() + 1);
-                tmpAtom.setFormalNeighbourCount(tmpAtom.getFormalNeighbourCount() + 1);
+                tmpAtom.setValency(null);
+                tmpAtom.setFormalNeighbourCount(null);
                 Integer tmpHCount = tmpAtom.getImplicitHydrogenCount();
                 if (tmpHCount == null) {
                     tmpHCount = 0;
