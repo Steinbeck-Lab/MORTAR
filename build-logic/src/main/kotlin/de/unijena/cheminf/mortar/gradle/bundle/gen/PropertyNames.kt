@@ -28,7 +28,7 @@ import de.unijena.cheminf.mortar.gradle.bundle.PropertyKey
 
 // Auto-generated at build time - do not edit!
 // Generated from: MortarBundle.properties
-// Generated at: 2025-09-02T09:14:11.889790500
+// Generated at: 2025-09-02T13:25:57.519948800
 
 object PropertyNames {
     /** 
