@@ -200,7 +200,7 @@ will take care of it automatically.
 **Needs to be pre-installed:**
 * Java Development Kit (JDK) version 21.0.1 or higher
     * [Adoptium Open JDK](https://adoptium.net) (as one possible source of the JDK)
-* Gradle version 8.5
+* Gradle version 8.14.3
     * [Gradle Build Tool](https://gradle.org)
 
 **Managed by Gradle:**
