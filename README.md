@@ -65,8 +65,8 @@ Pre-compiled and executable MORTAR distributions can be found attached as assets
 <a href="https://github.com/FelixBaensch/MORTAR/releases">marked releases</a> (below the change notes).
 <br>In brief (more details in the dedicated sections below), a graphical installer 
 executable is available for Windows, a disk image (DMG) file for installation 
-on macOS, and a Debian package (DEB) is available for installation on Debian-based 
-Linux distributions like Ubuntu.
+on macOS, an RPM Package Manager (RPM) package for Red Hat-based Linux distributions like AlmaLinux, and a Debian package (DEB) is 
+available for installation on Debian-based Linux distributions like Ubuntu.
 On all three operating systems (Windows, macOS, and Linux), MORTAR can also be run from the command line using the 
 supplied “fat” Java ARchive (JAR) which gives you full control, e.g., over how much memory should be used. A Java 
 Development Kit or Runtime Environment (JDK/JRE) of version 21.0.1 or higher must be pre-installed on your system
@@ -74,19 +74,20 @@ to run MORTAR from the command line.
 
 
 <p>
-<b>Windows:</b> A convenient Windows OS installer executable for MORTAR is available 
-(click <a href="https://github.com/FelixBaensch/MORTAR/releases/download/v1.4.0/MORTAR_v1.4.0.0_WINx64_installer.exe">here</a> to 
+<b>Windows:</b> A convenient Windows OS installer executable for MORTAR is available
+(click <a href="https://github.com/FelixBaensch/MORTAR/releases/download/v1.4.0/MORTAR_v1.4.0.0_WINx64_setup.exe">here</a> to 
 automatically download the installer.exe of the latest version). Download the installer 
 executable, start it, and follow the instructions to install MORTAR. Note that the installation includes a full 
-Java Runtime Environment (JRE). After installation, create a shortcut to an appropriate MORTAR start batch file on your 
-Windows desktop. E.g. for MORTAR to use up to 4 gigabytes of RAM, copy a shortcut to batch file "MORTAR.bat" which is 
-located in the MORTAR program folder (default "C:\Program Files\MORTAR\MORTARv1.4.0.0\bin" or the path specified at 
-installation). To start MORTAR, double-click the created shortcut. MORTAR can be uninstalled by the provided 
-Uninstall.exe executable in the MORTAR program folder or standard Windows functions.
+Java Runtime Environment (JRE). During installation, you are asked whether desktop or start menu icons/shortcuts should 
+be created. The executable (batch file) denoted "MORTAR" uses up to 4 GB of RAM, while the "MORTAR 20GB" configuration 
+allocates up to 20 GB of your RAM for running MORTAR. The MORTAR program folder is located at 
+"C:\Program Files\MORTAR\MORTARv1.4.0.0" by default but can be adjusted during installation. 
+To start MORTAR, double-click one of the created shortcuts. MORTAR can be uninstalled by the provided 
+"unins000.exe" executable in the MORTAR program folder or by standard Windows functions (Settings -> Apps -> Installed Apps).
 <br>
-As an alternative to "MORTAR.bat", there is also the "MORTAR_20GB.bat" batch file available that allocates up to 
-20 GB of RAM for MORTAR. If you want to configure your own heap space settings, open one of the provided batch files 
-and adjust the line
+If you want to configure your own heap space settings for running MORTAR, open one of the provided batch files 
+(in the "bin" subfolder of the MORTAR program folder, "MORTAR.bat" or "MORTAR_20GB.bat")
+in a text editor and adjust the line
 </p>
 
 ```shell
@@ -102,7 +103,7 @@ the command line (see below).
 
 <p><b>MacOS:</b> On macOS, MORTAR can be installed using the disk image (.dmg) files attached to every 
 <a href="https://github.com/FelixBaensch/MORTAR/releases">release</a> 
-since v1.2 (one for devices with an x86 processor architecture and one for ARM/AArch64-based systems). 
+since v1.2, one for devices with an x86 processor architecture and one for ARM/AArch64-based systems. 
 Download the right file for your system and double-click on it. In the window that opens, drag the MORTAR icon 
 into the Applications folder to install it. It might be necessary to 
 <a href="https://support.apple.com/en-gb/guide/mac-help/mh40620/mac">adjust your security settings</a> to allow MORTAR to run.
@@ -112,7 +113,7 @@ analyse bigger data sets or should this installation not work for you, you can r
 (see below).
 </p>
 
-<p><b>Linux</b>:
+<p><b>Debian-based Linux</b>:
 On Debian-based Linux distributions like Ubuntu, MORTAR can be installed using 
 the Debian package (.deb) attached to every 
 <a href="https://github.com/FelixBaensch/MORTAR/releases">release</a> since v1.2.2 
@@ -125,13 +126,32 @@ command line:
 sudo dpkg -i <path to>MORTAR-1.4.0.deb
 ```
 
-Execute the command in the directory where the JAR is situated or use its explicit 
+Execute the command in the directory where the package is situated or use its explicit 
 path instead of ```<path to>```.
 The package is configured to allocate up to 4 gigabytes of RAM to MORTAR. Should 
 you want to assign more memory to analyse bigger data sets or should this 
 installation not work for you, you can run MORTAR directly from the command line 
 (see below).
 
+<p><b>Red Hat-based Linux</b>:
+On Red Hat-based Linux distributions like AlmaLinux, MORTAR can be installed using 
+the RPM Package Manager (.rpm) package attached to every 
+<a href="https://github.com/FelixBaensch/MORTAR/releases">release</a> since v1.4.1 
+(only one for devices with an x86 processor architecture). Download the package 
+and double-click on it to install it. Alternatively, you can install it via the 
+command line:
+</p>
+
+```shell
+sudo rpm -i <path to>MORTAR-1.4.0.rpm
+```
+
+Execute the command in the directory where the package is situated or use its explicit
+path instead of ```<path to>```.
+The package is configured to allocate up to 4 gigabytes of RAM to MORTAR. Should
+you want to assign more memory to analyse bigger data sets or should this
+installation not work for you, you can run MORTAR directly from the command line
+(see below).
 
 <p><b>JAR execution via command line (all platforms)</b>: 
 Every release has the executable JAR "MORTAR-fat-1.4.0.0.jar"
@@ -150,7 +170,7 @@ Otherwise, replace "java" with the path to the java command of your JDK or JRE.<
 Execute the command in the directory where the JAR is situated or use its explicit path instead of ```<path to>```.<br>
 Adjust the initially allocated memory (-Xms) and maximum memory to be used (-Xmx) according to your preferences.
 
-<p><b>Further notes</b>: Please note that MORTAR only supports x64 (not x32, on all three platforms) and AArch64/ARM 
+<p><b>Further notes</b>: Please note that MORTAR only supports x64 (not x32, on all four platforms) and AArch64/ARM 
 (on macOS and Linux) architectures in general. 
 For the latter, a special "fat JAR" named "MORTAR-fat-aarch64-1.4.0.0.jar" is available from the distributions attached 
 to the releases and must be used 
@@ -168,11 +188,13 @@ for or recommend this way of deployment, similar to using the WSL as mentioned a
 ### Source code
 This is a Gradle project. In order to use the source code for your own software or do your own MORTAR build, download or 
 clone the repository and open it in a Gradle-supporting IDE (e.g. IntelliJ) as a Gradle project and execute the 
-build.gradle file. Gradle will then take care of installing all dependencies. A Java Development Kit (JDK) of version 21.0.1 
+build.gradle.kts file. Gradle will then take care of installing all dependencies. A Java Development Kit (JDK) of version 21.0.1 
 or higher must also be pre-installed and set as project JDK / project compiler.
-The Gradle build process is configured to include a specific Java Runtime Environment (JRE) in the "install" folder.
+The Gradle build process is configured to include a specific Java Runtime Environment (JRE) in the distributions.
 For this to work, you need to create an "AdoptOpenJDK\jdk-21.0.1_12_jre\" folder and put the JRE with the specified version 
 into it (i.e. sub-folders of "AdoptOpenJDK\jdk-21.0.1_12_jre\" need to be "bin", "conf", "legal", "lib", etc.).
+If you are only going to use our custom deployment Gradle tasks, you do not need to download the JRE manually, the tasks 
+will take care of it automatically.
 
 ## Dependencies
 **Needs to be pre-installed:**
