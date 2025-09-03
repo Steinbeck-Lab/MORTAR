@@ -76,14 +76,17 @@ to run MORTAR from the command line.
 <p>
 <b>Windows:</b> A convenient Windows OS installer executable for MORTAR is available
 (click <a href="https://github.com/FelixBaensch/MORTAR/releases/download/v1.4.0/MORTAR_v1.4.0.0_WINx64_setup.exe">here</a> to 
-automatically download the installer.exe of the latest version). Download the installer 
-executable, start it, and follow the instructions to install MORTAR. Note that the installation includes a full 
-Java Runtime Environment (JRE). During installation, you are asked whether desktop or start menu icons/shortcuts should 
-be created. The executable (batch file) denoted "MORTAR" uses up to 4 GB of RAM, while the "MORTAR 20GB" configuration 
-allocates up to 20 GB of your RAM for running MORTAR. The MORTAR program folder is located at 
-"C:\Program Files\MORTAR\MORTARv1.4.0.0" by default but can be adjusted during installation. 
-To start MORTAR, double-click one of the created shortcuts. MORTAR can be uninstalled by the provided 
-"unins000.exe" executable in the MORTAR program folder or by standard Windows functions (Settings -> Apps -> Installed Apps).
+automatically download the setup.exe of the latest version). Download the installer 
+executable, start it, and follow the instructions to install MORTAR. During installation, you are asked whether desktop 
+or start menu icons/shortcuts should be created. The executable (batch file) denoted "MORTAR" uses up to 4 GB of RAM, 
+while the "MORTAR 20GB" configuration allocates up to 20 GB of your RAM for running MORTAR. Note that no start menu folder
+will be created, so creating at least one of the shortcuts is recommended. To start MORTAR after installation, double-click 
+one of the created shortcuts. 
+<br>
+The MORTAR program folder is located at "C:\Program Files\MORTAR\MORTARv1.4.0.0" by default, but can be adjusted during 
+installation. MORTAR can be uninstalled by the provided "unins000.exe" executable in the MORTAR program folder or by 
+standard Windows functions (Settings -> Apps -> Installed Apps). Note that the installation includes a full Java Runtime 
+Environment (JRE).
 <br>
 If you want to configure your own heap space settings for running MORTAR, open one of the provided batch files 
 (in the "bin" subfolder of the MORTAR program folder, "MORTAR.bat" or "MORTAR_20GB.bat")
