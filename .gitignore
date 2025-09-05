@@ -53,3 +53,4 @@ AdoptOpenJDK.zip
 # build-logic directory
 /build-logic/build
 /build-logic/.kotlin
+/build-logic/src/main/kotlin/de/unijena/cheminf/mortar/gradle/bundle/gen/

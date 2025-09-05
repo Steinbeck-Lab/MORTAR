@@ -40,19 +40,19 @@ Source: ".\in\icon\*"; DestDir: "{app}\icon"; Flags: ignoreversion recursesubdir
 
 [Icons]
 ; Mortar
-Name: "{commondesktop}\{#thisAppName}"; Filename: "{app}\bin\{#thisAppName}.bat"; IconFilename: "{app}\icon\Mortar_Logo_Icon1.ico"; Tasks: desktopicon_mortar
-Name: "{commonstartmenu}\{#thisAppName}"; Filename: "{app}\bin\{#thisAppName}.bat"; IconFilename: "{app}\icon\Mortar_Logo_Icon1.ico"; Tasks: startmenu_mortar
+Name: "{commondesktop}\{#thisAppName} {#thisAppVersion}"; Filename: "{app}\bin\{#thisAppName}.bat"; IconFilename: "{app}\icon\Mortar_Logo_Icon1.ico"; Tasks: desktopicon_mortar
+Name: "{commonstartmenu}\{#thisAppName} {#thisAppVersion}"; Filename: "{app}\bin\{#thisAppName}.bat"; IconFilename: "{app}\icon\Mortar_Logo_Icon1.ico"; Tasks: startmenu_mortar
 ; Mortar 20GB
-Name: "{commondesktop}\{#thisAppName}20GB"; Filename: "{app}\bin\{#thisAppName}_20GB.bat"; IconFilename: "{app}\icon\Mortar_Logo_Icon1.ico"; Tasks: desktopicon_mortar20
-Name: "{commonstartmenu}\{#thisAppName}20GB"; Filename: "{app}\bin\{#thisAppName}_20GB.bat"; IconFilename: "{app}\icon\Mortar_Logo_Icon1.ico"; Tasks: startmenu_mortar20
+Name: "{commondesktop}\{#thisAppName} {#thisAppVersion} 20GB"; Filename: "{app}\bin\{#thisAppName}_20GB.bat"; IconFilename: "{app}\icon\Mortar_Logo_Icon1.ico"; Tasks: desktopicon_mortar20
+Name: "{commonstartmenu}\{#thisAppName} {#thisAppVersion} 20GB"; Filename: "{app}\bin\{#thisAppName}_20GB.bat"; IconFilename: "{app}\icon\Mortar_Logo_Icon1.ico"; Tasks: startmenu_mortar20
 
 [Tasks]
 ; Mortar
 Name: "desktopicon_mortar"; Description: "Create a &Desktop icon for {#thisAppName}"; GroupDescription: "Shortcuts:"; Flags: unchecked
-Name: "startmenu_mortar";  Description: "Create a &Start Menu icon for {#thisAppName}"; GroupDescription: "Shortcuts:"; Flags: unchecked
+Name: "startmenu_mortar";  Description: "Create a &Start Menu icon for {#thisAppName}"; GroupDescription: "Shortcuts:"
 ; Mortar 20GB
 Name: "desktopicon_mortar20"; Description: "Create a &Desktop icon for {#thisAppName} 20GB"; GroupDescription: "Shortcuts:"; Flags: unchecked
-Name: "startmenu_mortar20";  Description: "Create a &Start Menu icon for {#thisAppName} 20GB"; GroupDescription: "Shortcuts:"; Flags: unchecked
+Name: "startmenu_mortar20";  Description: "Create a &Start Menu icon for {#thisAppName} 20GB"; GroupDescription: "Shortcuts:"
 
 [Run]
 Filename: "{app}\bin\{#thisAppName}.bat"; \
