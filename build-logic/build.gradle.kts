@@ -2,8 +2,7 @@ import java.time.LocalDateTime
 import java.util.Properties
 
 plugins {
-    // This version of Gradle expects version "4.2.1" of the `kotlin-dsl`
-    id("org.gradle.kotlin.kotlin-dsl") version "4.2.1"
+    id("org.gradle.kotlin.kotlin-dsl") version "5.2.0"
 }
 
 repositories {

@@ -24,10 +24,7 @@ java {
 
 repositories {
     mavenCentral()
-    // CDK SNAPSHOT repository, this was needed to get the CDK 2.11 snapshot release to get
-    // FunctionalGroupsFinder that also copies atomic charges
-    //
-    // If needed again, uncomment the following line:
+    // CDK SNAPSHOT repository, uncomment if needed
     // maven { url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots") }
 }
 
@@ -178,7 +175,9 @@ distributions {
             into("bin") {
                 duplicatesStrategy = DuplicatesStrategy.EXCLUDE
                 from(tasks.named<CreateStartScripts>("mortarHighMemory"))
-                fileMode = 0b111_101_101 // 0755 in binary
+                filePermissions {
+                    unix("0755") // rwxr-xr-x - owner can read, write, and execute; group and others can read and execute
+                }
             }
             from(layout.projectDirectory.dir("AdoptOpenJDK"))
             into("tutorial") {
