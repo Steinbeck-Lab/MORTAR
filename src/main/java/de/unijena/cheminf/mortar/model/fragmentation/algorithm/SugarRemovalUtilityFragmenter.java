@@ -299,7 +299,7 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
      * Default for whether too small sugar modifications (i.e. groups that were disconnected in postprocessing)
      * should be discarded if postprocessing is enabled and not(!) limited by size.
      */
-    public static final boolean DISCARD_TOO_SMALL_SUGAR_MODIFICATIONS_DEFAULT = true;
+    public static final boolean DISCARD_TOO_SMALL_SUGAR_MODIFICATIONS_DEFAULT = false;
     //</editor-fold>
     //
     //<editor-fold desc="Private final variables">
@@ -1429,7 +1429,8 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
         if (tmpSugarsWereDetected) {
             if (this.returnedFragmentsSetting.get().equals(SugarRemovalUtilityFragmenter.SRUFragmenterReturnedFragmentsOption.ALL_FRAGMENTS)
                     || this.returnedFragmentsSetting.get().equals(SugarRemovalUtilityFragmenter.SRUFragmenterReturnedFragmentsOption.ONLY_SUGAR_MOIETIES)) {
-                for (IAtomContainer tmpSugarFragment : tmpFragments) {
+                for (int i = 0; i < tmpFragments.size(); i++) {
+                    IAtomContainer tmpSugarFragment = tmpFragments.get(i);
                     //skip aglycone fragments
                     if (!Objects.isNull(tmpSugarFragment.getProperty(IMoleculeFragmenter.FRAGMENT_CATEGORY_PROPERTY_KEY))
                             && tmpSugarFragment.getProperty(IMoleculeFragmenter.FRAGMENT_CATEGORY_PROPERTY_KEY)
@@ -1450,7 +1451,9 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
                             throw new UnsupportedOperationException("Undefined PreservationMode setting!");
                         }
                         if (tmpIsTooSmall) {
-                            tmpFragments.remove(tmpSugarFragment);
+                            tmpFragments.remove(i);
+                            i--;
+                            continue;
                         }
                     }
                     if (Objects.isNull(tmpSugarFragment.getProperty(IMoleculeFragmenter.FRAGMENT_CATEGORY_PROPERTY_KEY))) {
