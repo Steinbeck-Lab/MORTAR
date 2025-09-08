@@ -46,6 +46,7 @@ import org.openscience.cdk.interfaces.IAtomContainerSet;
 import org.openscience.cdk.silent.SilentChemObjectBuilder;
 import org.openscience.cdk.tools.SugarRemovalUtility;
 import org.openscience.cdk.tools.manipulator.AtomContainerComparator;
+import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -293,6 +294,12 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
      * Default for whether small substituents should not be split from the extracted sugars in postprocessing.
      */
     public static final boolean LIMIT_POSTPROCESSING_BY_SIZE_SETTING_DEFAULT = true;
+
+    /**
+     * Default for whether too small sugar modifications (i.e. groups that were disconnected in postprocessing)
+     * should be discarded if postprocessing is enabled and not(!) limited by size.
+     */
+    public static final boolean DISCARD_TOO_SMALL_SUGAR_MODIFICATIONS_DEFAULT = true;
     //</editor-fold>
     //
     //<editor-fold desc="Private final variables">
@@ -339,6 +346,8 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
 
     private final SimpleBooleanProperty limitPostprocessingBySizeSetting;
 
+    private final SimpleBooleanProperty discardTooSmallSugarModificationsSetting;
+
     /**
      * All settings of this fragmenter, encapsulated in JavaFX properties for binding in GUI.
      */
@@ -373,6 +382,7 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
                 BasicDefinitions.DEFAULT_HASH_COLLECTION_LOAD_FACTOR);
         this.settingNameTooltipTextMap = new HashMap<>(tmpInitialCapacityForSettingNameTooltipTextMap, BasicDefinitions.DEFAULT_HASH_COLLECTION_LOAD_FACTOR);
         this.settingNameDisplayNameMap = new HashMap<>(tmpInitialCapacityForSettingNameTooltipTextMap, BasicDefinitions.DEFAULT_HASH_COLLECTION_LOAD_FACTOR);
+
         this.returnedFragmentsSetting = new SimpleIDisplayEnumConstantProperty(this, "Returned fragments setting",
                 SugarRemovalUtilityFragmenter.RETURNED_FRAGMENTS_OPTION_DEFAULT, SugarRemovalUtilityFragmenter.SRUFragmenterReturnedFragmentsOption.class) {
             @Override
@@ -395,6 +405,7 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
                 Message.get("SugarRemovalUtilityFragmenter.returnedFragmentsSetting.tooltip"));
         this.settingNameDisplayNameMap.put(this.returnedFragmentsSetting.getName(),
                 Message.get("SugarRemovalUtilityFragmenter.returnedFragmentsSetting.displayName"));
+
         this.markAttachPointsByRSetting = new SimpleBooleanProperty(this,
                 "Mark attachment points by R setting",
                 SugarRemovalUtilityFragmenter.MARK_ATTACH_POINTS_BY_R_DEFAULT);
@@ -403,6 +414,7 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
                 Message.get("SugarRemovalUtilityFragmenter.markAttachPointsByRSetting.tooltip"));
         this.settingNameDisplayNameMap.put(this.markAttachPointsByRSetting.getName(),
                 Message.get("SugarRemovalUtilityFragmenter.markAttachPointsByRSetting.displayName"));
+
         this.fragmentSaturationSetting = new SimpleIDisplayEnumConstantProperty(this, "Fragment saturation setting",
                 IMoleculeFragmenter.FRAGMENT_SATURATION_OPTION_DEFAULT, IMoleculeFragmenter.FragmentSaturationOption.class) {
             @Override
@@ -420,12 +432,13 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
                 }
             }
         };
-        //To do: this needs to be done properly, by re-introducing the R saturation option
+        //TODO: this needs to be done properly, by re-introducing the R saturation option
 //        this.settings.add(this.fragmentSaturationSetting);
 //        this.settingNameTooltipTextMap.put(this.fragmentSaturationSetting.getName(),
 //                Message.get("SugarRemovalUtilityFragmenter.fragmentSaturationSetting.tooltip"));
 //        this.settingNameDisplayNameMap.put(this.fragmentSaturationSetting.getName(),
 //                Message.get("SugarRemovalUtilityFragmenter.fragmentSaturationSetting.displayName"));
+
         this.sugarTypeToRemoveSetting = new SimpleIDisplayEnumConstantProperty(this, "Sugar type to remove setting",
                 SugarRemovalUtilityFragmenter.SUGAR_TYPE_TO_REMOVE_OPTION_DEFAULT,
                 SugarRemovalUtilityFragmenter.SugarTypeToRemoveOption.class) {
@@ -449,6 +462,7 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
                 Message.get("SugarRemovalUtilityFragmenter.sugarTypeToRemoveSetting.tooltip"));
         this.settingNameDisplayNameMap.put(this.sugarTypeToRemoveSetting.getName(),
                 Message.get("SugarRemovalUtilityFragmenter.sugarTypeToRemoveSetting.displayName"));
+
         this.detectCircularSugarsOnlyWithGlycosidicBondSetting = new SimpleBooleanProperty(this,
                 "Detect circular sugars only with glycosidic bond setting",
                 this.sugarDUInstance.areOnlyCircularSugarsWithOGlycosidicBondDetected()) {
@@ -464,6 +478,7 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
                 Message.get("SugarRemovalUtilityFragmenter.detectCircularSugarsOnlyWithGlycosidicBondSetting.tooltip"));
         this.settingNameDisplayNameMap.put(this.detectCircularSugarsOnlyWithGlycosidicBondSetting.getName(),
                 Message.get("SugarRemovalUtilityFragmenter.detectCircularSugarsOnlyWithGlycosidicBondSetting.displayName"));
+
         this.removeOnlyTerminalSugarsSetting = new SimpleBooleanProperty(this, "Remove only terminal sugars setting",
                 this.sugarDUInstance.areOnlyTerminalSugarsRemoved()) {
             @Override
@@ -478,6 +493,7 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
                 Message.get("SugarRemovalUtilityFragmenter.removeOnlyTerminalSugarsSetting.tooltip"));
         this.settingNameDisplayNameMap.put(this.removeOnlyTerminalSugarsSetting.getName(),
                 Message.get("SugarRemovalUtilityFragmenter.removeOnlyTerminalSugarsSetting.displayName"));
+
         this.preservationModeSetting = new SimpleIDisplayEnumConstantProperty(this, "Preservation mode setting",
                 SugarRemovalUtilityFragmenter.PRESERVATION_MODE_DEFAULT, SRUFragmenterPreservationMode.class) {
             @Override
@@ -505,6 +521,7 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
                 Message.get("SugarRemovalUtilityFragmenter.preservationModeSetting.tooltip"));
         this.settingNameDisplayNameMap.put(this.preservationModeSetting.getName(),
                 Message.get("SugarRemovalUtilityFragmenter.preservationModeSetting.displayName"));
+
         this.preservationModeThresholdSetting = new SimpleIntegerProperty(this, "Preservation mode threshold setting",
                 this.sugarDUInstance.getPreservationModeThresholdSetting()) {
             @Override
@@ -529,6 +546,7 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
                 Message.get("SugarRemovalUtilityFragmenter.preservationModeThresholdSetting.tooltip"));
         this.settingNameDisplayNameMap.put(this.preservationModeThresholdSetting.getName(),
                 Message.get("SugarRemovalUtilityFragmenter.preservationModeThresholdSetting.displayName"));
+
         this.detectCircularSugarsOnlyWithEnoughExocyclicOxygenAtomsSetting = new SimpleBooleanProperty(this,
                 "Detect circular sugars only with enough exocyclic oxygen atoms setting",
                 this.sugarDUInstance.areOnlyCircularSugarsWithEnoughExocyclicOxygenAtomsDetected()) {
@@ -544,6 +562,7 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
                 Message.get("SugarRemovalUtilityFragmenter.detectCircularSugarsOnlyWithEnoughExocyclicOxygenAtomsSetting.tooltip"));
         this.settingNameDisplayNameMap.put(this.detectCircularSugarsOnlyWithEnoughExocyclicOxygenAtomsSetting.getName(),
                 Message.get("SugarRemovalUtilityFragmenter.detectCircularSugarsOnlyWithEnoughExocyclicOxygenAtomsSetting.displayName"));
+
         this.exocyclicOxygenAtomsToAtomsInRingRatioThresholdSetting = new SimpleDoubleProperty(this,
                 "Exocyclic oxygen atoms to atoms in ring ratio threshold setting",
                 this.sugarDUInstance.getExocyclicOxygenAtomsToAtomsInRingRatioThresholdSetting()) {
@@ -569,6 +588,7 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
                 Message.get("SugarRemovalUtilityFragmenter.exocyclicOxygenAtomsToAtomsInRingRatioThresholdSetting.tooltip"));
         this.settingNameDisplayNameMap.put(this.exocyclicOxygenAtomsToAtomsInRingRatioThresholdSetting.getName(),
                 Message.get("SugarRemovalUtilityFragmenter.exocyclicOxygenAtomsToAtomsInRingRatioThresholdSetting.displayName"));
+
         this.detectLinearSugarsInRingsSetting = new SimpleBooleanProperty(this, "Detect linear sugars in rings setting",
                 this.sugarDUInstance.areLinearSugarsInRingsDetected()) {
             @Override
@@ -583,6 +603,7 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
                 Message.get("SugarRemovalUtilityFragmenter.detectLinearSugarsInRingsSetting.tooltip"));
         this.settingNameDisplayNameMap.put(this.detectLinearSugarsInRingsSetting.getName(),
                 Message.get("SugarRemovalUtilityFragmenter.detectLinearSugarsInRingsSetting.displayName"));
+
         this.linearSugarCandidateMinimumSizeSetting = new SimpleIntegerProperty(this,
                 "Linear sugar candidate minimum size setting",
                 this.sugarDUInstance.getLinearSugarCandidateMinSizeSetting()) {
@@ -608,6 +629,7 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
                 Message.get("SugarRemovalUtilityFragmenter.linearSugarCandidateMinimumSizeSetting.tooltip"));
         this.settingNameDisplayNameMap.put(this.linearSugarCandidateMinimumSizeSetting.getName(),
                 Message.get("SugarRemovalUtilityFragmenter.linearSugarCandidateMinimumSizeSetting.displayName"));
+
         this.linearSugarCandidateMaximumSizeSetting = new SimpleIntegerProperty(this,
                 "Linear sugar candidate maximum size setting",
                 this.sugarDUInstance.getLinearSugarCandidateMaxSizeSetting()) {
@@ -633,6 +655,7 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
                 Message.get("SugarRemovalUtilityFragmenter.linearSugarCandidateMaximumSizeSetting.tooltip"));
         this.settingNameDisplayNameMap.put(this.linearSugarCandidateMaximumSizeSetting.getName(),
                 Message.get("SugarRemovalUtilityFragmenter.linearSugarCandidateMaximumSizeSetting.displayName"));
+
         this.detectLinearAcidicSugarsSetting = new SimpleBooleanProperty(this,
                 "Detect linear acidic sugars setting",
                 this.sugarDUInstance.areLinearAcidicSugarsDetected()) {
@@ -648,6 +671,7 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
                 Message.get("SugarRemovalUtilityFragmenter.detectLinearAcidicSugarsSetting.tooltip"));
         this.settingNameDisplayNameMap.put(this.detectLinearAcidicSugarsSetting.getName(),
                 Message.get("SugarRemovalUtilityFragmenter.detectLinearAcidicSugarsSetting.displayName"));
+
         this.detectSpiroRingsAsCircularSugarsSetting = new SimpleBooleanProperty(this,
                 "Detect spiro rings as circular sugars setting",
                 this.sugarDUInstance.areSpiroRingsDetectedAsCircularSugars()) {
@@ -663,6 +687,7 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
                 Message.get("SugarRemovalUtilityFragmenter.detectSpiroRingsAsCircularSugarsSetting.tooltip"));
         this.settingNameDisplayNameMap.put(this.detectSpiroRingsAsCircularSugarsSetting.getName(),
                 Message.get("SugarRemovalUtilityFragmenter.detectSpiroRingsAsCircularSugarsSetting.displayName"));
+
         this.detectCircularSugarsWithKetoGroupsSetting = new SimpleBooleanProperty(this,
                 "Detect circular sugars with keto groups setting",
                 this.sugarDUInstance.areCircularSugarsWithKetoGroupsDetected()) {
@@ -678,6 +703,7 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
                 Message.get("SugarRemovalUtilityFragmenter.detectCircularSugarsWithKetoGroupsSetting.tooltip"));
         this.settingNameDisplayNameMap.put(this.detectCircularSugarsWithKetoGroupsSetting.getName(),
                 Message.get("SugarRemovalUtilityFragmenter.detectCircularSugarsWithKetoGroupsSetting.displayName"));
+
         this.postProcessSugarsSetting = new SimpleBooleanProperty(this,
                 "Post-process sugars setting",
                 SugarRemovalUtilityFragmenter.POST_PROCESS_SUGARS_DEFAULT);
@@ -686,6 +712,7 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
                 Message.get("SugarRemovalUtilityFragmenter.postProcessSugarsSetting.tooltip"));
         this.settingNameDisplayNameMap.put(this.postProcessSugarsSetting.getName(),
                 Message.get("SugarRemovalUtilityFragmenter.postProcessSugarsSetting.displayName"));
+
         this.limitPostprocessingBySizeSetting = new SimpleBooleanProperty(this,
                 "Limit postprocessing by size setting",
                 SugarRemovalUtilityFragmenter.LIMIT_POSTPROCESSING_BY_SIZE_SETTING_DEFAULT);
@@ -694,6 +721,15 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
                 Message.get("SugarRemovalUtilityFragmenter.limitPostprocessingBySizeSetting.tooltip"));
         this.settingNameDisplayNameMap.put(this.limitPostprocessingBySizeSetting.getName(),
                 Message.get("SugarRemovalUtilityFragmenter.limitPostprocessingBySizeSetting.displayName"));
+
+        this.discardTooSmallSugarModificationsSetting = new SimpleBooleanProperty(this,
+                "Discard too small sugar modifications setting",
+                SugarRemovalUtilityFragmenter.DISCARD_TOO_SMALL_SUGAR_MODIFICATIONS_DEFAULT);
+        this.settings.add(discardTooSmallSugarModificationsSetting);
+        this.settingNameTooltipTextMap.put(this.discardTooSmallSugarModificationsSetting.getName(),
+                Message.get("SugarRemovalUtilityFragmenter.discardTooSmallSugarModificationsSetting.tooltip"));
+        this.settingNameDisplayNameMap.put(this.discardTooSmallSugarModificationsSetting.getName(),
+                Message.get("SugarRemovalUtilityFragmenter.discardTooSmallSugarModificationsSetting.displayName"));
     }
     //</editor-fold>
     //
@@ -1014,6 +1050,24 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
     public SimpleBooleanProperty limitPostprocessingBySizeSettingProperty() {
         return this.limitPostprocessingBySizeSetting;
     }
+
+    /**
+     * Returns the current state of the discard too small sugar modifications setting.
+     *
+     * @return true if too small sugar modifications should be discarded during post-processing
+     */
+    public boolean getDiscardTooSmallSugarModificationsSetting() {
+         return this.discardTooSmallSugarModificationsSetting.get();
+    }
+
+    /**
+     * Returns the property object of the discard too small sugar modifications setting that can be used to configure this setting.
+     *
+     * @return property object of the discard too small sugar modifications setting
+     */
+    public SimpleBooleanProperty discardTooSmallSugarModificationsSettingProperty() {
+        return this.discardTooSmallSugarModificationsSetting;
+    }
     //</editor-fold>
     //
     //<editor-fold desc="Public properties set">
@@ -1210,6 +1264,16 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
     public void setLimitPostprocessingBySizeSetting(boolean aBoolean) {
         this.limitPostprocessingBySizeSetting.set(aBoolean);
     }
+
+    /**
+     * Sets the discard too small sugar modifications setting, defining whether too small sugar modifications should
+     * be discarded during post-processing.
+     *
+     * @param aBoolean true, if too small sugar modifications should be discarded during post-processing
+     */
+    public void setDiscardTooSmallSugarModificationsSetting(boolean aBoolean) {
+        this.discardTooSmallSugarModificationsSetting.set(aBoolean);
+    }
     //</editor-fold>
     //
     //<editor-fold desc="IMoleculeFragmenter methods">
@@ -1371,6 +1435,23 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
                             && tmpSugarFragment.getProperty(IMoleculeFragmenter.FRAGMENT_CATEGORY_PROPERTY_KEY)
                             .equals(SugarRemovalUtilityFragmenter.FRAGMENT_CATEGORY_DEGLYCOSYLATED_CORE_VALUE)) {
                         continue;
+                    }
+                    if (this.postProcessSugarsSetting.get() && !this.limitPostprocessingBySizeSetting.get()) {
+                        boolean tmpIsTooSmall;
+                        if (this.preservationModeSetting.get() == SugarRemovalUtilityFragmenter.SRUFragmenterPreservationMode.ALL) {
+                            tmpIsTooSmall = false;
+                        } else if (this.preservationModeSetting.get() == SugarRemovalUtilityFragmenter.SRUFragmenterPreservationMode.HEAVY_ATOM_COUNT) {
+                            int heavyAtomCount = AtomContainerManipulator.getHeavyAtoms(tmpSugarFragment).size();
+                            tmpIsTooSmall = heavyAtomCount < this.preservationModeThresholdSetting.get();
+                        } else if (this.preservationModeSetting.get() == SugarRemovalUtilityFragmenter.SRUFragmenterPreservationMode.MOLECULAR_WEIGHT) {
+                            double molWeight = AtomContainerManipulator.getMass(tmpSugarFragment, AtomContainerManipulator.MolWeight);
+                            tmpIsTooSmall = molWeight < this.preservationModeThresholdSetting.get();
+                        } else {
+                            throw new UnsupportedOperationException("Undefined PreservationMode setting!");
+                        }
+                        if (tmpIsTooSmall) {
+                            tmpFragments.remove(tmpSugarFragment);
+                        }
                     }
                     if (Objects.isNull(tmpSugarFragment.getProperty(IMoleculeFragmenter.FRAGMENT_CATEGORY_PROPERTY_KEY))) {
                         tmpSugarFragment.setProperty(IMoleculeFragmenter.FRAGMENT_CATEGORY_PROPERTY_KEY,
