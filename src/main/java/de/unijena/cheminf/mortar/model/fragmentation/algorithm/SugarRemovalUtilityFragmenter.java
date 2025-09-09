@@ -293,7 +293,7 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
     /**
      * Default for whether small substituents should not be split from the extracted sugars in postprocessing.
      */
-    public static final boolean LIMIT_POSTPROCESSING_BY_SIZE_SETTING_DEFAULT = true;
+    public static final boolean LIMIT_POSTPROCESSING_BY_SIZE_SETTING_DEFAULT = false;
 
     /**
      * Default for whether too small sugar modifications (i.e. groups that were disconnected in postprocessing)
@@ -432,7 +432,7 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
                 }
             }
         };
-        //TODO: this needs to be done properly, by re-introducing the R saturation option
+        //TODO: this needs to be done properly, by re-introducing the R saturation option or removing the need for this setting in the interface
 //        this.settings.add(this.fragmentSaturationSetting);
 //        this.settingNameTooltipTextMap.put(this.fragmentSaturationSetting.getName(),
 //                Message.get("SugarRemovalUtilityFragmenter.fragmentSaturationSetting.tooltip"));
@@ -1341,6 +1341,7 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
         tmpCopy.setMarkAttachPointsByRSetting(this.markAttachPointsByRSetting.get());
         tmpCopy.setPostProcessSugarsSetting(this.postProcessSugarsSetting.get());
         tmpCopy.setLimitPostprocessingBySizeSetting(this.limitPostprocessingBySizeSetting.get());
+        tmpCopy.setDiscardTooSmallSugarModificationsSetting(this.discardTooSmallSugarModificationsSetting.get());
         return tmpCopy;
     }
 
@@ -1365,6 +1366,7 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
         this.markAttachPointsByRSetting.set(SugarRemovalUtilityFragmenter.MARK_ATTACH_POINTS_BY_R_DEFAULT);
         this.postProcessSugarsSetting.set(SugarRemovalUtilityFragmenter.POST_PROCESS_SUGARS_DEFAULT);
         this.limitPostprocessingBySizeSetting.set(SugarRemovalUtilityFragmenter.LIMIT_POSTPROCESSING_BY_SIZE_SETTING_DEFAULT);
+        this.discardTooSmallSugarModificationsSetting.set(SugarRemovalUtilityFragmenter.DISCARD_TOO_SMALL_SUGAR_MODIFICATIONS_DEFAULT);
     }
 
     @Override
