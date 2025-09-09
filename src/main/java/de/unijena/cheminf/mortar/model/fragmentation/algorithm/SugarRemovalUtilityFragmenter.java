@@ -1326,7 +1326,7 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
         tmpCopy.setReturnedFragmentsSetting((SRUFragmenterReturnedFragmentsOption) this.returnedFragmentsSetting.get());
         tmpCopy.setSugarTypeToRemoveSetting((SugarTypeToRemoveOption) this.sugarTypeToRemoveSetting.get());
         tmpCopy.setFragmentSaturationSetting((FragmentSaturationOption) this.fragmentSaturationSetting.get());
-        tmpCopy.setDetectCircularSugarsOnlyWithGlycosidicBondSetting(this.detectCircularSugarsOnlyWithEnoughExocyclicOxygenAtomsSetting.get());
+        tmpCopy.setDetectCircularSugarsOnlyWithGlycosidicBondSetting(this.detectCircularSugarsOnlyWithGlycosidicBondSetting.get());
         tmpCopy.setRemoveOnlyTerminalSugarsSetting(this.removeOnlyTerminalSugarsSetting.get());
         tmpCopy.setPreservationModeSetting((SRUFragmenterPreservationMode) this.preservationModeSetting.get());
         tmpCopy.setPreservationModeThresholdSetting(this.preservationModeThresholdSetting.get());
@@ -1378,15 +1378,14 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
         }
         List<IAtomContainer> tmpFragments;
         SugarRemovalUtilityFragmenter.SugarTypeToRemoveOption tmpOption = (SugarRemovalUtilityFragmenter.SugarTypeToRemoveOption) this.sugarTypeToRemoveSetting.get();
-        IAtomContainer tmpMoleculeClone = aMolecule.clone();
         try {
             tmpFragments = switch (tmpOption) {
                 case SugarTypeToRemoveOption.CIRCULAR ->
-                        this.sugarDUInstance.copyAndExtractAglyconeAndSugars(tmpMoleculeClone, true, false, this.markAttachPointsByRSetting.get(), this.postProcessSugarsSetting.get(), this.limitPostprocessingBySizeSetting.get());
+                        this.sugarDUInstance.copyAndExtractAglyconeAndSugars(aMolecule, true, false, this.markAttachPointsByRSetting.get(), this.postProcessSugarsSetting.get(), this.limitPostprocessingBySizeSetting.get());
                 case SugarTypeToRemoveOption.LINEAR ->
-                        this.sugarDUInstance.copyAndExtractAglyconeAndSugars(tmpMoleculeClone, false, true, this.markAttachPointsByRSetting.get(), this.postProcessSugarsSetting.get(), this.limitPostprocessingBySizeSetting.get());
+                        this.sugarDUInstance.copyAndExtractAglyconeAndSugars(aMolecule, false, true, this.markAttachPointsByRSetting.get(), this.postProcessSugarsSetting.get(), this.limitPostprocessingBySizeSetting.get());
                 case SugarTypeToRemoveOption.CIRCULAR_AND_LINEAR ->
-                        this.sugarDUInstance.copyAndExtractAglyconeAndSugars(tmpMoleculeClone, true, true, this.markAttachPointsByRSetting.get(), this.postProcessSugarsSetting.get(), this.limitPostprocessingBySizeSetting.get());
+                        this.sugarDUInstance.copyAndExtractAglyconeAndSugars(aMolecule, true, true, this.markAttachPointsByRSetting.get(), this.postProcessSugarsSetting.get(), this.limitPostprocessingBySizeSetting.get());
                 default ->
                         throw new IllegalStateException("Unexpected value: " + this.sugarTypeToRemoveSetting.get());
             };
@@ -1439,7 +1438,7 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
                             .equals(SugarRemovalUtilityFragmenter.FRAGMENT_CATEGORY_DEGLYCOSYLATED_CORE_VALUE)) {
                         continue;
                     }
-                    if (this.postProcessSugarsSetting.get() && !this.limitPostprocessingBySizeSetting.get()) {
+                    if (this.postProcessSugarsSetting.get() && !this.limitPostprocessingBySizeSetting.get() && this.discardTooSmallSugarModificationsSetting.get()) {
                         boolean tmpIsTooSmall;
                         if (this.preservationModeSetting.get() == SugarRemovalUtilityFragmenter.SRUFragmenterPreservationMode.ALL) {
                             tmpIsTooSmall = false;
