@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 
 //TODO: remove this file when the SugarDetectionUtility is available from CDK
+//TODO: but before you do that, try to get the CDK stereochem fix and the SRU fix into this project (via snapshots?), so that the disabled tests can pass
 
 /**
  * JUnit test class for testing the functionalities of the SugarDetectionUtility
@@ -59,7 +60,7 @@ import java.util.Map;
  * </p>
  *
  * @author Jonas Schaub
- * @version 2025-09-05
+ * @version 2025-09-12
  */
 class SugarDetectionUtilityTest {
 
@@ -76,6 +77,7 @@ class SugarDetectionUtilityTest {
         SugarDetectionUtility sdu = new SugarDetectionUtility(SilentChemObjectBuilder.getInstance());
         // Map of input SMILES codes to list of expected aglycone and sugar SMILES codes
         Map<String, List<String>> testCases = new HashMap<>((int) ((60.0/0.75) + 3.0));
+        //most structures were taken from an earlier version of COCONUT
         testCases.put(
                 "CC(=O)N[C@H]1[C@H](O[C@H]2[C@H](O)[C@@H](NC(C)=O)[C@@H](OP(=O)(O)OP(=O)(O)OCCC(C)CC/C=C(\\C)CC/C=C(\\C)CC/C=C(\\C)CCC=C(C)C)O[C@@H]2CO)O[C@H](CO)[C@@H](O[C@@H]2O[C@H](CO[C@H]3O[C@H](CO[C@H]4O[C@H](CO)[C@@H](O[C@H]5O[C@H](CO)[C@@H](O)[C@H](O)[C@@H]5O)[C@H](O)[C@@H]4O)[C@@H](O)[C@H](O[C@H]4O[C@H](CO)[C@@H](O[C@H]5O[C@H](CO)[C@@H](O)[C@H](O)[C@@H]5O)[C@H](O)[C@@H]4O)[C@@H]3O)[C@@H](O)[C@H](O[C@H]3O[C@H](CO)[C@@H](O)[C@H](O)[C@@H]3O[C@H]3O[C@H](CO)[C@@H](O)[C@H](O)[C@@H]3O[C@H]3O[C@H](CO)[C@@H](O)[C@H](O[C@H]4O[C@H](CO)[C@@H](O)[C@H](O[C@H]5O[C@H](CO)[C@@H](O)[C@H](O)[C@H]5O[C@H]5O[C@H](CO)[C@@H](O)[C@H](O)[C@H]5O)[C@H]4O)[C@@H]3O)[C@@H]2O)[C@@H]1O",
                 Arrays.asList(
@@ -439,7 +441,7 @@ class SugarDetectionUtilityTest {
         SugarDetectionUtility sdu = new SugarDetectionUtility(SilentChemObjectBuilder.getInstance());
         // Map of input SMILES codes to list of expected aglycone and sugar SMILES codes
         Map<String, List<String>> testCases = new HashMap<>((int) ((60.0/0.75) + 3.0));
-        // Add these test cases to the testCases map in sugarExtractionWithRTestAsserting()
+        //most structures were taken from an earlier version of COCONUT
         testCases.put(
                 "CC(=O)N[C@H]1[C@H](O[C@H]2[C@H](O)[C@@H](NC(C)=O)[C@@H](OP(=O)(O)OP(=O)(O)OCCC(C)CC/C=C(\\C)CC/C=C(\\C)CC/C=C(\\C)CCC=C(C)C)O[C@@H]2CO)O[C@H](CO)[C@@H](O[C@@H]2O[C@H](CO[C@H]3O[C@H](CO[C@H]4O[C@H](CO)[C@@H](O[C@H]5O[C@H](CO)[C@@H](O)[C@H](O)[C@@H]5O)[C@H](O)[C@@H]4O)[C@@H](O)[C@H](O[C@H]4O[C@H](CO)[C@@H](O[C@H]5O[C@H](CO)[C@@H](O)[C@H](O)[C@@H]5O)[C@H](O)[C@@H]4O)[C@@H]3O)[C@@H](O)[C@H](O[C@H]3O[C@H](CO)[C@@H](O)[C@H](O)[C@@H]3O[C@H]3O[C@H](CO)[C@@H](O)[C@H](O)[C@@H]3O[C@H]3O[C@H](CO)[C@@H](O)[C@H](O[C@H]4O[C@H](CO)[C@@H](O)[C@H](O[C@H]5O[C@H](CO)[C@@H](O)[C@H](O)[C@H]5O[C@H]5O[C@H](CO)[C@@H](O)[C@H](O)[C@H]5O)[C@H]4O)[C@@H]3O)[C@@H]2O)[C@@H]1O",
                 Arrays.asList(
@@ -1017,10 +1019,11 @@ class SugarDetectionUtilityTest {
         SmilesParser smiPar = new SmilesParser(SilentChemObjectBuilder.getInstance());
         SmilesGenerator smiGen = new SmilesGenerator(SmiFlavor.Stereo);
         SugarDetectionUtility sdu = new SugarDetectionUtility(SilentChemObjectBuilder.getInstance());
-        String glycosidicNP = "OCC(O)C(O)C(O)C(O)C(O)C1OC(O)C(O)C(O)C1N";
+        //CNP0183311.1
+        String glycosidicNP = "N[C@H]1[C@@H](O)[C@@H](O)[C@H](O)O[C@H]1[C@H](O)[C@H](O)[C@H](O)[C@H](O)[C@H](O)CO";
         List<String> expectedSmilesList = Arrays.asList(
-                "OCC(O)C(O)C(O)C(O)CO",
-                "C1OC(O)C(O)C(O)C1N"
+                "C(O)[C@H](O)[C@H](O)[C@H](O)[C@H](O)CO",
+                "N[C@H]1[C@@H](O)[C@@H](O)[C@H](O)OC1"
         );
         IAtomContainer molecule = smiPar.parseSmiles(glycosidicNP);
         List<IAtomContainer> candidates = sdu.copyAndExtractAglyconeAndSugars(molecule, true, false, false);
@@ -1038,10 +1041,11 @@ class SugarDetectionUtilityTest {
         SmilesParser smiPar = new SmilesParser(SilentChemObjectBuilder.getInstance());
         SmilesGenerator smiGen = new SmilesGenerator(SmiFlavor.Stereo);
         SugarDetectionUtility sdu = new SugarDetectionUtility(SilentChemObjectBuilder.getInstance());
-        String smiles = "O=C(O)CC(O)(C(=O)O)C(C(=O)O)CCCCCCCCCCCCCC";
+        //CNP0151166.1
+        String smiles = "CCCCCCCCCCCCCCCC[C@@H](C(=O)O)[C@](O)(CC(=O)O)C(=O)O";
         List<IAtomContainer> candidates = sdu.copyAndExtractAglyconeAndSugars(smiPar.parseSmiles(smiles), true, false, false);
         List<String> expectedSmilesList = Arrays.asList(
-                "O=C(O)CC(O)(C(=O)O)C(C(=O)O)CCCCCCCCCCCCCC"
+                "CCCCCCCCCCCCCCCC[C@@H](C(=O)O)[C@](O)(CC(=O)O)C(=O)O"
         );
         List<String> generatedSmilesList = this.generateSmilesList(candidates, smiGen);
         Assertions.assertLinesMatch(expectedSmilesList, generatedSmilesList);
@@ -1057,11 +1061,12 @@ class SugarDetectionUtilityTest {
         SmilesParser smiPar = new SmilesParser(SilentChemObjectBuilder.getInstance());
         SmilesGenerator smiGen = new SmilesGenerator(SmiFlavor.Stereo);
         SugarDetectionUtility sdu = new SugarDetectionUtility(SilentChemObjectBuilder.getInstance());
-        String smiles = "OCC(O)C(O)C(O)C(O)C1OC(CO)C(O)C(O)C1O";
+        //CNP0119227.1
+        String smiles = "OC[C@H](O)[C@H](O)[C@H](O)[C@H](O)[C@@H]1O[C@H](CO)[C@@H](O)[C@H](O)[C@H]1O";
         List<IAtomContainer> candidates = sdu.copyAndExtractAglyconeAndSugars(smiPar.parseSmiles(smiles), true, false, false);
         List<String> expectedSmilesList = Arrays.asList(
-                "OCC(O)C(O)C(O)CO",
-                "C1OC(CO)C(O)C(O)C1O"
+                "OC[C@H](O)[C@H](O)[C@H](O)CO",
+                "C1O[C@H](CO)[C@@H](O)[C@H](O)[C@H]1O"
         );
         List<String> generatedSmilesList = this.generateSmilesList(candidates, smiGen);
         Assertions.assertLinesMatch(expectedSmilesList, generatedSmilesList);
@@ -1072,17 +1077,19 @@ class SugarDetectionUtilityTest {
      *
      * @throws Exception if anything goes wrong
      */
+    @Disabled("needs fix to the CDK stereochemistry handling")
     @Test
     void sugarExtractionIndividualTest4() throws Exception {
         SmilesParser smiPar = new SmilesParser(SilentChemObjectBuilder.getInstance());
         SmilesGenerator smiGen = new SmilesGenerator(SmiFlavor.Stereo);
         SugarDetectionUtility sdu = new SugarDetectionUtility(SilentChemObjectBuilder.getInstance());
-        String smiles = "O=C(C=CC1=CC=C(O)C=C1)C=2C(=O)C(C(=O)C(O)(C2O)C3OC(CO)C(O)C(O)C3O)C(O)C4OCC(O)C(O)C4O";
+        //CNP0438078.1
+        String smiles = "O=C(/C=C\\C1=CC=C(O)C=C1)C1=C(O)[C@@](O)([C@@H]2O[C@H](CO)[C@@H](O)[C@H](O)[C@H]2O)C(=O)[C@H]([C@H](O)[C@H]2OC[C@@H](O)[C@@H](O)[C@@H]2O)C1=O";
         List<IAtomContainer> candidates = sdu.copyAndExtractAglyconeAndSugars(smiPar.parseSmiles(smiles), true, false, false);
         List<String> expectedSmilesList = Arrays.asList(
-                "O=C(C=CC1=CC=C(O)C=C1)C=2C(=O)C(C(=O)C(O)C2O)CO",
-                "C1OC(CO)C(O)C(O)C1O",
-                "C1OCC(O)C(O)C1O"
+                "O=C(/C=C\\C1=CC=C(O)C=C1)C2=C(O)[C@H](O)C(=O)[C@H](CO)C2=O",
+                "C1O[C@H](CO)[C@@H](O)[C@H](O)[C@H]1O",
+                "C1OC[C@@H](O)[C@@H](O)[C@@H]1O"
         );
         List<String> generatedSmilesList = this.generateSmilesList(candidates, smiGen);
         Assertions.assertLinesMatch(expectedSmilesList, generatedSmilesList);
@@ -1229,7 +1236,7 @@ class SugarDetectionUtilityTest {
         sdu.setRemoveOnlyTerminalSugarsSetting(false);
         //CNP0273794.1
         String smiles = "CCOC1O[C@H]([C@@H](COCC2=CC=CC=C2)OCC2=CC=CC=C2)[C@H](OCC2=CC=CC=C2)[C@H]1O";
-        List<IAtomContainer> candidates =sdu.copyAndExtractAglyconeAndSugars(smiPar.parseSmiles(smiles), true, true, true, true);
+        List<IAtomContainer> candidates =sdu.copyAndExtractAglyconeAndSugars(smiPar.parseSmiles(smiles), true, true, true, true, true);
         List<String> expectedSmilesList = Arrays.asList(
                 "C(COCC1=CC=CC=C1)(OCC2=CC=CC=C2)*.O(CC1=CC=CC=C1)*",
                 "CCOC1OC([C@@H]([C@H]1O)O*)*"
@@ -1249,12 +1256,13 @@ class SugarDetectionUtilityTest {
         SmilesParser smiPar = new SmilesParser(SilentChemObjectBuilder.getInstance());
         SmilesGenerator smiGen = new SmilesGenerator(SmiFlavor.Stereo);
         SugarDetectionUtility sdu = new SugarDetectionUtility(SilentChemObjectBuilder.getInstance());
-        String smiles = "C1=C(C=CC(=C1)O[C@H]2[C@@H]([C@H]([C@@H]([C@@H](COC(=O)/C=C/C3(C=CC(=O)C=C3)O)O2)O)O)O)O";
+        //Robustaside D (CNP0296149.1)
+        String smiles = "O=C1C=CC(O)(/C=C/C(=O)OC[C@H]2O[C@@H](OC3=CC=C(O)C=C3)[C@H](O)[C@@H](O)[C@@H]2O)C=C1";
         sdu.setRemoveOnlyTerminalSugarsSetting(false);
         List<IAtomContainer> candidates =sdu.copyAndExtractAglyconeAndSugars(smiPar.parseSmiles(smiles), true, true, false);
         List<String> expectedSmilesList = Arrays.asList(
-                "C1=C(C=CC(=C1)O)O.OC(=O)/C=C/C1(C=CC(=O)C=C1)O",
-                "[C@@H]1([C@@H]([C@H]([C@@H]([C@H](O1)CO)O)O)O)O"
+                "O=C1C=CC(O)(/C=C/C(=O)O)C=C1.OC1=CC=C(O)C=C1",
+                "[C@@H]1(O[C@H]([C@H](O)[C@@H](O)[C@@H]1O)O)CO"
         );
         List<String> generatedSmilesList = this.generateSmilesList(candidates, smiGen);
         Assertions.assertLinesMatch(expectedSmilesList, generatedSmilesList);
@@ -1440,6 +1448,7 @@ class SugarDetectionUtilityTest {
         SmilesParser smiPar = new SmilesParser(SilentChemObjectBuilder.getInstance());
         SmilesGenerator smiGen = new SmilesGenerator(SmiFlavor.Stereo);
         SugarDetectionUtility sdu = new SugarDetectionUtility(SilentChemObjectBuilder.getInstance());
+        //Beta-sophorose CID441432
         String smiles = "OC[C@H]1O[C@@H](O[C@@H]2[C@@H](O)[C@H](O)[C@@H](CO)O[C@H]2O)[C@H](O)[C@@H](O)[C@@H]1O";
         IAtomContainer molecule = smiPar.parseSmiles(smiles);
         sdu.splitOGlycosidicBondsAndEthers(molecule, false, false, true);
@@ -1528,15 +1537,16 @@ class SugarDetectionUtilityTest {
         SmilesParser smiPar = new SmilesParser(SilentChemObjectBuilder.getInstance());
         SmilesGenerator smiGen = new SmilesGenerator(SmiFlavor.Canonical);
         SugarDetectionUtility sdu = new SugarDetectionUtility(SilentChemObjectBuilder.getInstance());
-        String smiles = "O=C(NC1C(O)OC(CO)C(O)C1OC2OC(CO)C(OC)C(O)C2OC3OC(C)C(O)C(O)C3OC)C";
+        //CNP0189711.1
+        String smiles = "CO[C@@H]1[C@@H](O)[C@@H](O[C@@H]2O[C@H](C)[C@@H](O)[C@H](O)[C@H]2OC)[C@H](O[C@@H]2[C@@H](O)[C@@H](CO)O[C@@H](O)[C@@H]2NC(C)=O)O[C@@H]1CO";
         IAtomContainer molecule = smiPar.parseSmiles(smiles);
         List<IAtomContainer> results = sdu.copyAndExtractAglyconeAndSugars(molecule, true, true, true, true, true);
         //notice that the methyl ether modifications are not separated from the sugars
         List<String> expectedSmilesList = Arrays.asList(
                 "",
-                "*OC1C(O)C(OC(O)C1NC(=O)C)CO",
                 "*OC1OC(CO)C(OC)C(O)C1O*",
-                "*OC1OC(C)C(O)C(O)C1OC"
+                "*OC1OC(C)C(O)C(O)C1OC",
+                "*OC1C(O)C(OC(O)C1NC(=O)C)CO"
         );
         List<String> generatedSmilesList = this.generateSmilesList(results, smiGen);
         Assertions.assertLinesMatch(expectedSmilesList, generatedSmilesList);
@@ -1611,7 +1621,8 @@ class SugarDetectionUtilityTest {
     void testRetrievalOfAtomIndices() throws Exception {
         SmilesParser smiPar = new SmilesParser(SilentChemObjectBuilder.getInstance());
         SugarDetectionUtility sdu = new SugarDetectionUtility(SilentChemObjectBuilder.getInstance());
-        String smiles = "CCCCCC=CC=CC(O)CC=CC=CC(=O)OC1C(O)C(C2=C(O)C=C(O)C=C2CO)OC(CO)C1OC1OC(C)C(O)C(O)C1OC1OC(O)C(O)C(O)C1O";
+        //Fusacandin B (CNP0295326.4)
+        String smiles = "CCCCC/C=C/C=C/[C@@H](O)C/C=C/C=C/C(=O)OC1C(O)[C@H](C2=C(O)C=C(O)C=C2CO)O[C@H](CO)[C@H]1O[C@@H]1OC(CO)[C@H](O)[C@H](O)C1O[C@@H]1OC(CO)[C@H](O)[C@H](O)C1O";
         IAtomContainer mol = smiPar.parseSmiles(smiles);
         Map<IAtom, IAtom> inputAtomToAglyconeAtomMap = new HashMap<>((int) ((mol.getAtomCount() / 0.75f) + 2), 0.75f);
         Map<IAtom, IAtom> inputAtomToSugarAtomMap = new HashMap<>((int) ((mol.getAtomCount() / 0.75f) + 2), 0.75f);
@@ -1631,8 +1642,8 @@ class SugarDetectionUtilityTest {
         Assertions.assertEquals(3, candidates.size());
         int[] sugarOneAtomIndices = sdu.getAtomIndicesOfGroup(mol, candidates.get(1), inputAtomToSugarAtomMap);
         int[] sugarTwoAtomIndices = sdu.getAtomIndicesOfGroup(mol, candidates.get(2), inputAtomToSugarAtomMap);
-        Assertions.assertArrayEquals(new int[] {38, 39, 40, 41, 42, 43, 44, 45, 46, 47}, sugarOneAtomIndices);
-        Assertions.assertArrayEquals(new int[] {48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58}, sugarTwoAtomIndices);
+        Assertions.assertArrayEquals(new int[] {38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48}, sugarOneAtomIndices);
+        Assertions.assertArrayEquals(new int[] {49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60}, sugarTwoAtomIndices);
     }
 
     /**
@@ -1644,7 +1655,7 @@ class SugarDetectionUtilityTest {
     void testGetGroupIndicesForAllAtoms() throws Exception {
         SmilesParser smiPar = new SmilesParser(SilentChemObjectBuilder.getInstance());
         SugarDetectionUtility sdu = new SugarDetectionUtility(SilentChemObjectBuilder.getInstance());
-        //CNP0295326.4
+        //Fusacandin B (CNP0295326.4)
         String smiles = "CCCCC/C=C/C=C/[C@@H](O)C/C=C/C=C/C(=O)OC1C(O)[C@H](C2=C(O)C=C(O)C=C2CO)O[C@H](CO)[C@H]1O[C@@H]1OC(CO)[C@H](O)[C@H](O)C1O[C@@H]1OC(CO)[C@H](O)[C@H](O)C1O";
         IAtomContainer mol = smiPar.parseSmiles(smiles);
         Map<IAtom, IAtom> inputAtomToAglyconeAtomMap = new HashMap<>((int) ((mol.getAtomCount() / 0.75f) + 2), 0.75f);
