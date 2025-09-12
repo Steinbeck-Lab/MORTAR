@@ -11,7 +11,6 @@ javafxplugin-version = "0.1.0"
 spotless-version = "7.0.2"
 
 [libraries]
-cdkBundle = { group = "org.openscience.cdk", name = "cdk-bundle", version.ref = "cdk-version"}
 cdkPdb = { group = "org.openscience.cdk", name = "cdk-pdb", version.ref = "cdk-version" }
 cdkSilent = { group = "org.openscience.cdk", name = "cdk-silent", version.ref = "cdk-version" }
 cdkExtra = { group = "org.openscience.cdk", name = "cdk-extra", version.ref = "cdk-version" }
