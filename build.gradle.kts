@@ -25,7 +25,7 @@ java {
 repositories {
     mavenCentral()
     // CDK SNAPSHOT repository, uncomment if needed
-    // maven { url = uri("https://central.sonatype.com/repository/maven-snapshots/") }
+    maven { url = uri("https://central.sonatype.com/repository/maven-snapshots/") }
 }
 
 dependencies {
