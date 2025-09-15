@@ -29,7 +29,6 @@ import de.unijena.cheminf.mortar.gui.util.GuiUtil;
 import de.unijena.cheminf.mortar.message.Message;
 import de.unijena.cheminf.mortar.model.io.Importer;
 import de.unijena.cheminf.mortar.model.util.BasicDefinitions;
-import de.unijena.cheminf.mortar.model.util.ChemUtil;
 import de.unijena.cheminf.mortar.model.util.CollectionUtil;
 import de.unijena.cheminf.mortar.model.util.IDisplayEnum;
 import de.unijena.cheminf.mortar.model.util.SimpleIDisplayEnumConstantProperty;
@@ -39,7 +38,6 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 
-import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.graph.ConnectivityChecker;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IAtomContainerSet;
@@ -315,8 +313,6 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
 
     private final SimpleIDisplayEnumConstantProperty sugarTypeToRemoveSetting;
 
-    private final SimpleIDisplayEnumConstantProperty fragmentSaturationSetting;
-
     private final SimpleBooleanProperty detectCircularSugarsOnlyWithGlycosidicBondSetting;
 
     private final SimpleBooleanProperty removeOnlyTerminalSugarsSetting;
@@ -415,30 +411,6 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
                 Message.get("SugarRemovalUtilityFragmenter.markAttachPointsByRSetting.tooltip"));
         this.settingNameDisplayNameMap.put(this.markAttachPointsByRSetting.getName(),
                 Message.get("SugarRemovalUtilityFragmenter.markAttachPointsByRSetting.displayName"));
-
-        this.fragmentSaturationSetting = new SimpleIDisplayEnumConstantProperty(this, "Fragment saturation setting",
-                IMoleculeFragmenter.FRAGMENT_SATURATION_OPTION_DEFAULT, IMoleculeFragmenter.FragmentSaturationOption.class) {
-            @Override
-            public void set(IDisplayEnum newValue) throws NullPointerException, IllegalArgumentException {
-                try {
-                    super.set(newValue);
-                } catch (NullPointerException | IllegalArgumentException anException) {
-                    SugarRemovalUtilityFragmenter.LOGGER.log(Level.WARNING, anException.toString(), anException);
-                    GuiUtil.guiExceptionAlert(Message.get("Fragmenter.IllegalSettingValue.Title"),
-                            Message.get("Fragmenter.IllegalSettingValue.Header"),
-                            anException.toString(),
-                            anException);
-                    //re-throws the exception to properly reset the binding
-                    throw anException;
-                }
-            }
-        };
-        //TODO: this needs to be done properly, by re-introducing the R saturation option or removing the need for this setting in the interface
-//        this.settings.add(this.fragmentSaturationSetting);
-//        this.settingNameTooltipTextMap.put(this.fragmentSaturationSetting.getName(),
-//                Message.get("SugarRemovalUtilityFragmenter.fragmentSaturationSetting.tooltip"));
-//        this.settingNameDisplayNameMap.put(this.fragmentSaturationSetting.getName(),
-//                Message.get("SugarRemovalUtilityFragmenter.fragmentSaturationSetting.displayName"));
 
         this.sugarTypeToRemoveSetting = new SimpleIDisplayEnumConstantProperty(this, "Sugar type to remove setting",
                 SugarRemovalUtilityFragmenter.SUGAR_TYPE_TO_REMOVE_OPTION_DEFAULT,
@@ -1306,27 +1278,10 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
     }
 
     @Override
-    public IMoleculeFragmenter.FragmentSaturationOption getFragmentSaturationSetting() {
-        return (IMoleculeFragmenter.FragmentSaturationOption) this.fragmentSaturationSetting.get();
-    }
-
-    @Override
-    public SimpleIDisplayEnumConstantProperty fragmentSaturationSettingProperty() {
-        return this.fragmentSaturationSetting;
-    }
-
-    @Override
-    public void setFragmentSaturationSetting(FragmentSaturationOption anOption) throws NullPointerException {
-        Objects.requireNonNull(anOption, "Given saturation option is null.");
-        this.fragmentSaturationSetting.set(anOption);
-    }
-
-    @Override
     public IMoleculeFragmenter copy() {
         SugarRemovalUtilityFragmenter tmpCopy = new SugarRemovalUtilityFragmenter();
         tmpCopy.setReturnedFragmentsSetting((SRUFragmenterReturnedFragmentsOption) this.returnedFragmentsSetting.get());
         tmpCopy.setSugarTypeToRemoveSetting((SugarTypeToRemoveOption) this.sugarTypeToRemoveSetting.get());
-        tmpCopy.setFragmentSaturationSetting((FragmentSaturationOption) this.fragmentSaturationSetting.get());
         tmpCopy.setDetectCircularSugarsOnlyWithGlycosidicBondSetting(this.detectCircularSugarsOnlyWithGlycosidicBondSetting.get());
         tmpCopy.setRemoveOnlyTerminalSugarsSetting(this.removeOnlyTerminalSugarsSetting.get());
         tmpCopy.setPreservationModeSetting((SRUFragmenterPreservationMode) this.preservationModeSetting.get());
@@ -1350,7 +1305,6 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
     public void restoreDefaultSettings() {
         this.returnedFragmentsSetting.set(SugarRemovalUtilityFragmenter.RETURNED_FRAGMENTS_OPTION_DEFAULT);
         this.sugarTypeToRemoveSetting.set(SugarRemovalUtilityFragmenter.SUGAR_TYPE_TO_REMOVE_OPTION_DEFAULT);
-        this.fragmentSaturationSetting.set(IMoleculeFragmenter.FRAGMENT_SATURATION_OPTION_DEFAULT);
         this.sugarDUInstance.restoreDefaultSettings();
         this.detectCircularSugarsOnlyWithGlycosidicBondSetting.set(this.sugarDUInstance.areOnlyCircularSugarsWithOGlycosidicBondDetected());
         this.removeOnlyTerminalSugarsSetting.set(this.sugarDUInstance.areOnlyTerminalSugarsRemoved());
@@ -1401,14 +1355,6 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
         if (this.returnedFragmentsSetting.get().equals(SugarRemovalUtilityFragmenter.SRUFragmenterReturnedFragmentsOption.ALL_FRAGMENTS)
                 || this.returnedFragmentsSetting.get().equals(SugarRemovalUtilityFragmenter.SRUFragmenterReturnedFragmentsOption.ONLY_AGLYCONE)) {
             if (!tmpAglycone.isEmpty()) {
-                try {
-                    if (this.fragmentSaturationSetting.get().equals(FragmentSaturationOption.HYDROGEN_SATURATION)) {
-                        ChemUtil.saturateWithHydrogen(tmpAglycone);
-                    }
-                    ChemUtil.checkAndCorrectElectronConfiguration(tmpAglycone);
-                } catch (CDKException aCDKException) {
-                    SugarRemovalUtilityFragmenter.LOGGER.log(Level.WARNING, "Aglycone saturation failed.");
-                }
                 if (!ConnectivityChecker.isConnected(tmpAglycone)) {
                     List<IAtomContainer> tmpAglyconeFragments = this.partitionAndSortUnconnectedFragments(tmpAglycone);
                     for (IAtomContainer tmpAglyconeFragment : tmpAglyconeFragments) {
@@ -1461,14 +1407,6 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
                     if (Objects.isNull(tmpSugarFragment.getProperty(IMoleculeFragmenter.FRAGMENT_CATEGORY_PROPERTY_KEY))) {
                         tmpSugarFragment.setProperty(IMoleculeFragmenter.FRAGMENT_CATEGORY_PROPERTY_KEY,
                                 SugarRemovalUtilityFragmenter.FRAGMENT_CATEGORY_SUGAR_MOIETY_VALUE);
-                    }
-                    try {
-                        if (this.fragmentSaturationSetting.get().equals(FragmentSaturationOption.HYDROGEN_SATURATION)) {
-                            ChemUtil.saturateWithHydrogen(tmpSugarFragment);
-                        }
-                        ChemUtil.checkAndCorrectElectronConfiguration(tmpSugarFragment);
-                    } catch (CDKException aCDKException) {
-                        SugarRemovalUtilityFragmenter.LOGGER.log(Level.WARNING, "Fragment saturation failed.");
                     }
                 }
             //else: only aglycone is returned, dispose of sugars
