@@ -76,7 +76,7 @@ jobs:
       - name: Upload DMG as an artifact
         uses: actions/upload-artifact@v4
         with:
-          name: MORTAR-1.4.0-${{ matrix.os }}.dmg
+          name: MORTAR-1.5.0-${{ matrix.os }}.dmg
           path: ./*.dmg
           retention-days: 30
           compression-level: 0 # no compression since it makes no difference
@@ -107,7 +107,7 @@ jobs:
       - name: Upload DEB as an artifact
         uses: actions/upload-artifact@v4
         with:
-          name: MORTAR-1.4.0.deb
+          name: MORTAR-1.5.0.deb
           path: ./*.deb
           retention-days: 30
           compression-level: 0 # no compression since it makes no difference
@@ -116,7 +116,7 @@ jobs:
       - name: Upload RPM as an artifact
         uses: actions/upload-artifact@v4
         with:
-          name: MORTAR-1.4.0.rpm
+          name: MORTAR-1.5.0.rpm
           path: ./*.rpm
           retention-days: 30
           compression-level: 0 # no compression since it makes no difference
