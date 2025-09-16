@@ -341,28 +341,6 @@ public interface IMoleculeFragmenter {
     String getFragmentationAlgorithmDisplayName();
 
     /**
-     * Returns the currently set option for saturating free valences on returned fragment molecules.
-     *
-     * @return the set option
-     */
-    FragmentSaturationOption getFragmentSaturationSetting();
-
-    /**
-     * Returns the property representing the setting for fragment saturation.
-     *
-     * @return setting property for fragment saturation
-     */
-    SimpleIDisplayEnumConstantProperty fragmentSaturationSettingProperty();
-
-    /**
-     * Sets the option for saturating free valences on returned fragment molecules.
-     *
-     * @param anOption the saturation option to use
-     * @throws NullPointerException if the given option is null
-     */
-    void setFragmentSaturationSetting(FragmentSaturationOption anOption) throws NullPointerException;
-
-    /**
      * Returns a new instance of the respective fragmenter with the same settings as this instance. Intended for
      * multi-threaded work where every thread needs its own fragmenter instance.
      *

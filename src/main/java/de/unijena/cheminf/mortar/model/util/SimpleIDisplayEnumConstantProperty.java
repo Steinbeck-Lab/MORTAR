@@ -43,6 +43,8 @@ public class SimpleIDisplayEnumConstantProperty extends SimpleObjectProperty<IDi
      * The enum class the constant belongs to.
      */
     protected Class associatedEnum;
+    //</editor-fold>
+    //
     //<editor-fold desc="Constructors">
     /**
      * Constructor with all parameters.

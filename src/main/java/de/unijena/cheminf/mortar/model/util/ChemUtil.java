@@ -375,8 +375,6 @@ public final class ChemUtil {
      * Fixes radical atoms in a molecule by replacing the single electron with an implicit hydrogen atom.
      * This method converts radical centers to closed-shell configurations by:
      * <ol>
-     * <li>Increasing the valency of radical atoms by 1</li>
-     * <li>Increasing the formal neighbor count by 1</li>
      * <li>Adding an implicit hydrogen to each radical center</li>
      * <li>Removing all single electrons from the molecule</li>
      * <li>Reperceiving atom types to ensure correct configuration</li>
@@ -398,10 +396,10 @@ public final class ChemUtil {
             //fix properties of the atoms that are radicals
             for (ISingleElectron tmpSingleElectron : aMolecule.singleElectrons()) {
                 IAtom tmpAtom = tmpSingleElectron.getAtom();
-                //setting to null now, will be re-detected correctly below
+                //setting to null now, will be re-detected correctly by AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(aMolecule) below
                 tmpAtom.setHybridization(null);
-                tmpAtom.setValency(tmpAtom.getValency() + 1);
-                tmpAtom.setFormalNeighbourCount(tmpAtom.getFormalNeighbourCount() + 1);
+                tmpAtom.setValency(null);
+                tmpAtom.setFormalNeighbourCount(null);
                 Integer tmpHCount = tmpAtom.getImplicitHydrogenCount();
                 if (tmpHCount == null) {
                     tmpHCount = 0;
