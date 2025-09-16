@@ -37,7 +37,7 @@ molecular <i>in silico</i> fragmentation and substructure analysis. The Java/Jav
 functions for visualizing the fragmentation results of individual compounds or entire compound sets. 
 In addition to three currently integrated methods for fragmentation and substructure analysis - 
 <a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder">ErtlFunctionalGroupsFinder</a>, 
-<a href="https://github.com/JonasSchaub/SugarRemoval">Sugar Removal Utility</a>, 
+<a href="https://github.com/JonasSchaub/SugarRemoval">Sugar Removal Utility</a> (with the <a href="https://github.com/cdk/cdk/pull/1225">Sugar Detection Utility</a> extension), 
 and <a href="https://github.com/cdk/cdk-scaffold">CDK-Scaffold</a> - MORTAR allows straightforward integration of 
 additional fragmentation algorithms to support the development of new methods at an early stage. 
 All cheminformatics functionalities are implemented based on the <a href="https://github.com/cdk/cdk">Chemistry Development Kit (CDK)</a>.<br>
@@ -210,7 +210,7 @@ will take care of it automatically.
 * JavaFX version 21.0.1
   * [Open JavaFX](https://openjfx.io)
   * GNU General Public License (GPL) Version 2
-* Chemistry Development Kit (CDK) version 2.11
+* Chemistry Development Kit (CDK) version 2.12-SNAPSHOT
     * [Chemistry Development Kit on GitHub](https://cdk.github.io/)
     * License: GNU Lesser General Public License 2.1
 * JUnit version 5.11.4
