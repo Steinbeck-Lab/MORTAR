@@ -676,6 +676,17 @@ public class ScaffoldGeneratorFragmenter implements IMoleculeFragmenter {
     //
     //<editor-fold desc="Public properties set">
     /**
+     * Sets the option for saturating free valences on returned fragment molecules.
+     *
+     * @param anOption the saturation option to use
+     * @throws NullPointerException if the given option is null
+     */
+    public void setFragmentSaturationSetting(FragmentSaturationOption anOption) throws NullPointerException {
+        Objects.requireNonNull(anOption, "Given saturation option is null.");
+        this.fragmentSaturationSetting.set(anOption);
+    }
+
+    /**
      * Sets the scaffold mode setting, defining which form of scaffold is to be created.
      *
      * @param anOption a constant from the ScaffoldGeneratorFragmenter.SGFragmenterScaffoldModeOption enum
@@ -776,6 +787,24 @@ public class ScaffoldGeneratorFragmenter implements IMoleculeFragmenter {
     //</editor-fold>
     //
     //<editor-fold desc="Public properties get">
+    /**
+     * Returns the currently set option for saturating free valences on returned fragment molecules.
+     *
+     * @return the set option
+     */
+    public IMoleculeFragmenter.FragmentSaturationOption getFragmentSaturationSetting() {
+        return (IMoleculeFragmenter.FragmentSaturationOption) this.fragmentSaturationSetting.get();
+    }
+
+    /**
+     * Returns the property representing the setting for fragment saturation.
+     *
+     * @return setting property for fragment saturation
+     */
+    public SimpleIDisplayEnumConstantProperty fragmentSaturationSettingProperty() {
+        return this.fragmentSaturationSetting;
+    }
+
     /**
      * Returns the boolean value of the Scaffold Generator setting whether hybridisations
      * should only be retained at aromatic bonds (true) or all bonds (false).
@@ -994,22 +1023,6 @@ public class ScaffoldGeneratorFragmenter implements IMoleculeFragmenter {
     @Override
     public String getFragmentationAlgorithmDisplayName() {
         return Message.get("ScaffoldGeneratorFragmenter.displayName");
-    }
-
-    @Override
-    public FragmentSaturationOption getFragmentSaturationSetting() {
-        return (IMoleculeFragmenter.FragmentSaturationOption) this.fragmentSaturationSetting.get();
-    }
-
-    @Override
-    public SimpleIDisplayEnumConstantProperty fragmentSaturationSettingProperty() {
-        return this.fragmentSaturationSetting;
-    }
-
-    @Override
-    public void setFragmentSaturationSetting(FragmentSaturationOption anOption) throws NullPointerException {
-        Objects.requireNonNull(anOption, "Given saturation option is null.");
-        this.fragmentSaturationSetting.set(anOption);
     }
 
     @Override

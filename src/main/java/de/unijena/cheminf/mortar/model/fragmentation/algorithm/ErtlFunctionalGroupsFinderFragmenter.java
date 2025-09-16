@@ -467,6 +467,24 @@ public class ErtlFunctionalGroupsFinderFragmenter implements IMoleculeFragmenter
     //
     //<editor-fold desc="Public properties get">
     /**
+     * Returns the currently set option for saturating free valences on returned fragment molecules.
+     *
+     * @return the set option
+     */
+    public IMoleculeFragmenter.FragmentSaturationOption getFragmentSaturationSetting() {
+        return (IMoleculeFragmenter.FragmentSaturationOption) this.fragmentSaturationSetting.get();
+    }
+
+    /**
+     * Returns the property representing the setting for fragment saturation.
+     *
+     * @return setting property for fragment saturation
+     */
+    public SimpleIDisplayEnumConstantProperty fragmentSaturationSettingProperty() {
+        return this.fragmentSaturationSetting;
+    }
+
+    /**
      * Returns the currently set option for the environment mode setting.
      *
      * @return enum constant of the set option
@@ -579,6 +597,17 @@ public class ErtlFunctionalGroupsFinderFragmenter implements IMoleculeFragmenter
     //
     //<editor-fold desc="Public properties set">
     /**
+     * Sets the option for saturating free valences on returned fragment molecules.
+     *
+     * @param anOption the saturation option to use
+     * @throws NullPointerException if the given option is null
+     */
+    public void setFragmentSaturationSetting(FragmentSaturationOption anOption) throws NullPointerException {
+        Objects.requireNonNull(anOption, "Given saturation option is null.");
+        this.fragmentSaturationSetting.set(anOption);
+    }
+
+    /**
      * Sets the environment mode setting defining whether the returned functional group fragments should have full environments,
      * generalized environments or no environments.
      *
@@ -676,22 +705,6 @@ public class ErtlFunctionalGroupsFinderFragmenter implements IMoleculeFragmenter
     @Override
     public String getFragmentationAlgorithmDisplayName() {
         return Message.get("ErtlFunctionalGroupsFinderFragmenter.displayName");
-    }
-
-    @Override
-    public IMoleculeFragmenter.FragmentSaturationOption getFragmentSaturationSetting() {
-        return (IMoleculeFragmenter.FragmentSaturationOption) this.fragmentSaturationSetting.get();
-    }
-
-    @Override
-    public SimpleIDisplayEnumConstantProperty fragmentSaturationSettingProperty() {
-        return this.fragmentSaturationSetting;
-    }
-
-    @Override
-    public void setFragmentSaturationSetting(FragmentSaturationOption anOption) throws NullPointerException {
-        Objects.requireNonNull(anOption, "Given saturation option is null.");
-        this.fragmentSaturationSetting.set(anOption);
     }
 
     @Override

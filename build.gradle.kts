@@ -25,14 +25,13 @@ java {
 repositories {
     mavenCentral()
     // CDK SNAPSHOT repository, uncomment if needed
-    // maven { url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots") }
+    maven { url = uri("https://central.sonatype.com/repository/maven-snapshots/") }
 }
 
 dependencies {
     testImplementation(platform(libs.junit))
     testImplementation(libs.jupiter)
     //<editor-fold desc="CDK dependencies">
-    // implementation(libs.cdkBundle)
     implementation(libs.cdkPdb)
     implementation(libs.cdkSilent)
     implementation(libs.cdkExtra)
