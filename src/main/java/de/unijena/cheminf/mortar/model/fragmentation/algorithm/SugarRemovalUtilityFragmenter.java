@@ -1030,7 +1030,7 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
      * @return true if too small sugar modifications should be discarded during post-processing
      */
     public boolean getDiscardTooSmallSugarModificationsSetting() {
-         return this.discardTooSmallSugarModificationsSetting.get();
+        return this.discardTooSmallSugarModificationsSetting.get();
     }
 
     /**
