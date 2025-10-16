@@ -365,4 +365,28 @@ public class DynamicSMILESFileReaderTest {
         Assertions.assertEquals("cmnpd_id_11687", tmpMolSet.getAtomContainer(36).getProperty(Importer.MOLECULE_NAME_PROPERTY_KEY));
         Assertions.assertEquals(0, tmpReader.getSkippedLinesCounter());
     }
+    //
+    /**
+     * Tests a file with aromatic fragments created using the Ertl algorithm fragmenter.
+     * Test file's specifications:
+     * - 10 structures
+     * - no headline
+     * - no faulty lines
+     * - SMILES first in line, name second
+     * - used separator: space
+     *
+     * @throws Exception if anything goes wrong
+     */
+    @Test
+    public void testAromatics() throws Exception {
+        URL tmpURL = this.getClass().getResource("Aromatics.smi");
+        File tmpResourceFile = Paths.get(tmpURL.toURI()).toFile();
+        DynamicSMILESFileFormat tmpFormat = DynamicSMILESFileReader.detectFormat(tmpResourceFile);
+        DynamicSMILESFileReader tmpReader = new DynamicSMILESFileReader();
+        IAtomContainerSet tmpMolSet = tmpReader.readFile(tmpResourceFile, tmpFormat);
+        Assertions.assertEquals(10, tmpMolSet.getAtomContainerCount());
+        Assertions.assertEquals("derivat-(1S)-6,8-dihydroxy-1-methyl-1,2-dihydrocyclopenta[c]isochromene-3,5-dione", tmpMolSet.getAtomContainer(0).getProperty(Importer.MOLECULE_NAME_PROPERTY_KEY));
+        Assertions.assertEquals("derivat-6-chloro-3-(3-methylisoxazol-5-yl)-4-phenylquinolin-2(1H)-one", tmpMolSet.getAtomContainer(9).getProperty(Importer.MOLECULE_NAME_PROPERTY_KEY));
+        Assertions.assertEquals(0, tmpReader.getSkippedLinesCounter());
+    }
 }
