@@ -34,8 +34,6 @@ import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.exception.InvalidSmilesException;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IAtomContainerSet;
-import org.openscience.cdk.interfaces.IChemObjectBuilder;
-import org.openscience.cdk.silent.SilentChemObjectBuilder;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -133,9 +131,8 @@ public class DynamicSMILESFileReader {
                 FileReader tmpSmilesFileReader = new FileReader(aFile);
                 BufferedReader tmpSmilesFileBufferedReader = new BufferedReader(tmpSmilesFileReader, BasicDefinitions.BUFFER_SIZE)
         ) {
-            IChemObjectBuilder tmpBuilder = SilentChemObjectBuilder.getInstance();
             // AtomContainer to save the parsed SMILES in
-            IAtomContainer tmpMolecule = tmpBuilder.newAtomContainer();
+            IAtomContainer tmpMolecule = null;
             String tmpSmilesFileDeterminedSeparator = String.valueOf(DynamicSMILESFileFormat.PLACEHOLDER_SEPARATOR_CHAR);
             int tmpSmilesCodeExpectedPosition = DynamicSMILESFileFormat.DEFAULT_SMILES_COLUMN_POSITION;
             int tmpIDExpectedPosition = DynamicSMILESFileFormat.PLACEHOLDER_ID_COLUMN_POSITION;
@@ -167,7 +164,7 @@ public class DynamicSMILESFileReader {
                             //if it fails again, goes to catch block below
                             tmpMolecule = ChemUtil.parseSmilesToAtomContainer(tmpSmilesFileCurrentLine.trim(), false, false);
                         }
-                        if (!tmpMolecule.isEmpty()) {
+                        if (tmpMolecule != null && !tmpMolecule.isEmpty()) {
                             //success, SMILES column is identified
                             tmpSmilesCodeExpectedPosition = 0;
                             break findSeparatorLoop;
@@ -199,7 +196,7 @@ public class DynamicSMILESFileReader {
                                 //if it fails again, goes to catch block below
                                 tmpMolecule = ChemUtil.parseSmilesToAtomContainer(tmpNextElementOfLine.trim(), false, false);
                             }
-                            if (!tmpMolecule.isEmpty()) {
+                            if (tmpMolecule != null && !tmpMolecule.isEmpty()) {
                                 //success, separator and SMILES column are identified
                                 tmpSmilesFileDeterminedSeparator = tmpSeparator;
                                 tmpSmilesCodeExpectedPosition = i;
@@ -216,7 +213,7 @@ public class DynamicSMILESFileReader {
                     }
                 }
             }
-            if (tmpMolecule.isEmpty()) {
+            if (tmpMolecule == null || tmpMolecule.isEmpty()) {
                 throw new IOException("Chosen file does not fit to the expected format of a SMILES file.");
             }
             boolean tmpHasHeaderLine;
