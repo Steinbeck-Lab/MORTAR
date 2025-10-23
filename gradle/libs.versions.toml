@@ -27,6 +27,8 @@ cdkValencycheck = { group = "org.openscience.cdk", name = "cdk-valencycheck", ve
 cdkFragment = { group = "org.openscience.cdk", name = "cdk-fragment", version.ref = "cdk-version" }
 cdkScaffold = { group = "org.openscience.cdk", name = "cdk-scaffold", version.ref = "cdkScaffold-version" }
 
+molWURCS = { group = "org.glycoinfo", name = "MolWURCS", version = "0.12.1" }
+
 openpdf = { group = "com.github.librepdf", name = "openpdf", version.ref = "openpdf-version" }
 javafxControls = { group = "org.openjfx", name = "javafx-controls", version.ref = "javafx-version" }
 javafxSwing = { group = "org.openjfx", name = "javafx-swing", version.ref = "javafx-version" }
