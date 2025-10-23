@@ -133,7 +133,8 @@ public class MolWURCSFragmenter implements IMoleculeFragmenter {
         StringWriter tmpStringWriter = new StringWriter();
         WURCSWriter tmpWURCSWriter = new WURCSWriter(tmpStringWriter);
         tmpWURCSWriter.setOutputWithAglycone(false); //todo this can be a setting
-        tmpWURCSWriter.setDoDoubleCheck(true);
+        tmpWURCSWriter.setDoDoubleCheck(false); //todo true?
+        tmpWURCSWriter.setTitlePropertyID(Importer.MOLECULE_NAME_PROPERTY_KEY);
         //writes the WURCS representation to the StringWriter
         //todo throws and catches internal NullPointerExceptions
         tmpWURCSWriter.writeAtomContainer(aMolecule);
