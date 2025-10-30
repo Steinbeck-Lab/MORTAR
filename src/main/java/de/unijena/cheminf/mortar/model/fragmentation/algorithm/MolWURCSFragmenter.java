@@ -32,10 +32,14 @@ import javafx.beans.property.Property;
 
 import org.glycoinfo.MolWURCS.exchange.fromWURCS.WURCSGraphToMolecule;
 import org.glycoinfo.MolWURCS.io.WURCSWriter;
+import org.glycoinfo.MolWURCS.util.analysis.HighEnergySiteFinder;
 import org.glycoinfo.WURCSFramework.util.WURCSException;
 import org.glycoinfo.WURCSFramework.util.WURCSFactory;
 import org.glycoinfo.WURCSFramework.wurcs.graph.WURCSGraph;
+import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.interfaces.IAtomContainer;
+import org.openscience.cdk.interfaces.IBond;
+import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -133,10 +137,21 @@ public class MolWURCSFragmenter implements IMoleculeFragmenter {
         StringWriter tmpStringWriter = new StringWriter();
         WURCSWriter tmpWURCSWriter = new WURCSWriter(tmpStringWriter);
         tmpWURCSWriter.setOutputWithAglycone(false); //todo this can be a setting
-        tmpWURCSWriter.setDoDoubleCheck(false); //todo true?
+        tmpWURCSWriter.setDoDoubleCheck(true); //todo true? - setting?
         tmpWURCSWriter.setTitlePropertyID(Importer.MOLECULE_NAME_PROPERTY_KEY);
+        //little preprocessing to prevent WURCS from trying to deduce stereo config from coordinates that are not there
+        for (IBond bond : aMolecule.bonds()) {
+            if (bond.getDisplay() == IBond.Display.Solid && bond.getOrder() == IBond.Order.DOUBLE) {
+                bond.setDisplay(IBond.Display.Crossed);
+            }
+        }
+        try {
+            AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(aMolecule);
+        } catch (CDKException anException) {
+            throw new IllegalArgumentException("Could not perceive atom types and configure atoms of the molecule to fragment("
+                    + aMolecule.getProperty(Importer.MOLECULE_NAME_PROPERTY_KEY) + ").", anException);
+        }
         //writes the WURCS representation to the StringWriter
-        //todo throws and catches internal NullPointerExceptions
         tmpWURCSWriter.writeAtomContainer(aMolecule);
         // Get WURCS String
         String tmpWURCSString = tmpStringWriter.toString();
@@ -147,7 +162,7 @@ public class MolWURCSFragmenter implements IMoleculeFragmenter {
         for (String tmpWURCSCode : tmpSeparateSugarWURCSCodesList) {
             WURCSFactory tmpWURCSFactory = null;
             try {
-                tmpWURCSFactory = new WURCSFactory(tmpWURCSCode, false); //todo investigate param
+                tmpWURCSFactory = new WURCSFactory(tmpWURCSCode, true); //todo investigate param, setting?
             } catch (WURCSException tmpException) {
                 MolWURCSFragmenter.LOGGER.log(Level.SEVERE, "Error while parsing WURCS code: " + tmpWURCSCode + " molecule name: " + aMolecule.getProperty(Importer.MOLECULE_NAME_PROPERTY_KEY), tmpException);
                 continue;
@@ -162,21 +177,27 @@ public class MolWURCSFragmenter implements IMoleculeFragmenter {
 
     @Override
     public boolean shouldBeFiltered(IAtomContainer aMolecule) {
-        return false;
+        if (aMolecule.isEmpty()) {
+            return true;
+        }
+        //note: we could check for many other things that WURCS does not support here but it checks again on its own again anyway...
+        return HighEnergySiteFinder.find(aMolecule);
     }
 
     @Override
     public boolean shouldBePreprocessed(IAtomContainer aMolecule) throws NullPointerException {
+        //done internally by WURCS
         return false;
     }
 
     @Override
     public boolean canBeFragmented(IAtomContainer aMolecule) throws NullPointerException {
-        return true;
+        return !this.shouldBeFiltered(aMolecule) && this.shouldBePreprocessed(aMolecule);
     }
 
     @Override
     public IAtomContainer applyPreprocessing(IAtomContainer aMolecule) throws NullPointerException, IllegalArgumentException, CloneNotSupportedException {
+        //do nothing
         return aMolecule;
     }
 }
