@@ -32,6 +32,12 @@
         <license>LGPL v2.1</license>
     </externalTool>
     <externalTool>
+        <name>MolWURCS</name>
+        <version>0.12.1</version>
+        <author>WURCS Working Group</author>
+        <license>[Unknown]</license>
+    </externalTool>
+    <externalTool>
         <name>OpenJFX</name>
         <version>21.0.1</version>
         <author>OpenJDK</author>

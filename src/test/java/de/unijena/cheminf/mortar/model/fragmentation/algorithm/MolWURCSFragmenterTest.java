@@ -34,11 +34,19 @@ import org.openscience.cdk.smiles.SmilesParser;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  *
  */
-class MolWURCSFragmenterTest extends MolWURCSFragmenter {
+public class MolWURCSFragmenterTest {
+    /**
+     * Constructor that sets the default locale to british english, which is important for the correct functioning of the
+     * fragmenter because the settings tooltips are imported from the message.properties file.
+     */
+    public MolWURCSFragmenterTest() {
+        Locale.setDefault(Locale.of("en", "GB"));
+    }
     /**
      *
      * @throws Exception
@@ -98,7 +106,12 @@ class MolWURCSFragmenterTest extends MolWURCSFragmenter {
         MolWURCSFragmenter tmpMolWURCSFragmenter = new MolWURCSFragmenter();
         for (String tmpSmi : tmpStructures) {
             IAtomContainer tmpMol = tmpSmiPar.parseSmiles(tmpSmi);
-            List<IAtomContainer> tmpFragments = tmpMolWURCSFragmenter.fragmentMolecule(tmpMol);
+            List<IAtomContainer> tmpFragments = null;
+            if (tmpMolWURCSFragmenter.canBeFragmented(tmpMol)) {
+                tmpFragments = tmpMolWURCSFragmenter.fragmentMolecule(tmpMol);
+            } else {
+                continue;
+            }
             for (IAtomContainer tmpFrag : tmpFragments) {
                 String fragSmiles = tmpSmiGen.create(tmpFrag);
                 System.out.println("Fragment: " + fragSmiles);
