@@ -273,7 +273,7 @@ public class MolWURCSFragmenter implements IMoleculeFragmenter {
             throw new IllegalArgumentException("Given molecule cannot be fragmented but should be filtered or preprocessed first.");
         }
         //</editor-fold>
-        //MolWURCS applies preprocessing to atom container
+        //MolWURCS applies preprocessing to atom container, so safer to work with a clone here
         IAtomContainer tmpMoleculeClone = aMolecule.clone();
         //output writer for WURCSWriter
         StringWriter tmpStringWriter = new StringWriter();
@@ -289,7 +289,7 @@ public class MolWURCSFragmenter implements IMoleculeFragmenter {
                 bond.setDisplay(IBond.Display.Crossed);
             }
         }
-        //preprocessing
+        //preprocessing necessary for aromaticity perception in WURCS preprocessing
         try {
             AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(tmpMoleculeClone);
         } catch (CDKException anException) {
@@ -301,21 +301,28 @@ public class MolWURCSFragmenter implements IMoleculeFragmenter {
         try {
             tmpWURCSWriter.close();
         } catch (IOException anException) {
-            MolWURCSFragmenter.LOGGER.log(Level.WARNING, "Could not close WURCSWriter after writing molecule: "
-                    + tmpMoleculeClone.getProperty(Importer.MOLECULE_NAME_PROPERTY_KEY), anException);
+            MolWURCSFragmenter.LOGGER.log(Level.WARNING, String.format("Could not close WURCSWriter after writing molecule: %s",
+                    tmpMoleculeClone.getProperty(Importer.MOLECULE_NAME_PROPERTY_KEY)), anException);
         }
-        // Get WURCS String
+        //retrieve generated WURCS String
         String tmpWURCSString = tmpStringWriter.toString();
-        // Parse WURCS String back to Molecule(s)
+        //parse WURCS String back to Molecule(s)
         // if multiple sugar moieties were detected, they are separated by new lines
         List<String> tmpSeparateSugarWURCSCodesList = tmpWURCSString.lines().toList();
+        if (tmpSeparateSugarWURCSCodesList.isEmpty() || (tmpSeparateSugarWURCSCodesList.size() == 1
+                && (Objects.isNull(tmpSeparateSugarWURCSCodesList.getFirst()) || tmpSeparateSugarWURCSCodesList.getFirst().isBlank()))) {
+            return new ArrayList<>(0);
+        }
         List<IAtomContainer> tmpFragments = new ArrayList<>(tmpSeparateSugarWURCSCodesList.size());
         WURCSGraphToMolecule tmpWURCSGraphToMol = new WURCSGraphToMolecule();
         for (String tmpWURCSCode : tmpSeparateSugarWURCSCodesList) {
-//            if (Objects.isNull(tmpWURCSCode) || tmpWURCSCode.isBlank()) {
-//                continue;
-//            }
-            WURCSFactory tmpWURCSFactory = null;
+            //if there was an issue, the WURCSWriter might have logged the exception to console and returned an empty line
+            // we want to detect such cases and properly throw an exception, so that it gets counted for the log
+            if (Objects.isNull(tmpWURCSCode) || tmpWURCSCode.isBlank()) {
+                throw new NullPointerException("Error while creating WURCS code: " + tmpWURCSCode
+                        + " molecule name: " + tmpMoleculeClone.getProperty(Importer.MOLECULE_NAME_PROPERTY_KEY));
+            }
+            WURCSFactory tmpWURCSFactory;
             try {
                 //factory has to be newly instantiated for every molecule
                 tmpWURCSFactory = new WURCSFactory(tmpWURCSCode, this.normalizeWURCSBeforeRetranslationSetting.get());
@@ -323,6 +330,7 @@ public class MolWURCSFragmenter implements IMoleculeFragmenter {
                 try {
                     tmpWURCSGraphToMol.start(tmpWURCSGraph);
                 } catch (NullPointerException anException) {
+                    //re-throwing to add the molecule name to the message
                     throw new NullPointerException("Error while parsing WURCS code: " + tmpWURCSCode
                             + " molecule name: " + tmpMoleculeClone.getProperty(Importer.MOLECULE_NAME_PROPERTY_KEY)
                             + " original message: " + anException.getMessage());
@@ -349,14 +357,15 @@ public class MolWURCSFragmenter implements IMoleculeFragmenter {
         if (Objects.isNull(aMolecule) || aMolecule.isEmpty()) {
             return true;
         }
-        //note: we could check for many other things that WURCS does not support here, but it checks again on its own again anyway...
+        //note: we could check for many other things that WURCS does not support here, but it checks again on its own anyway...
+        //checks for radicals, high-energy bonds and rings
         return HighEnergySiteFinder.find(aMolecule);
     }
 
     @Override
     public boolean shouldBePreprocessed(IAtomContainer aMolecule) throws NullPointerException {
         Objects.requireNonNull(aMolecule, "Given molecule is null.");
-        //done internally by WURCS
+        //preprocessing is done internally by WURCS later
         return false;
     }
 
@@ -375,7 +384,7 @@ public class MolWURCSFragmenter implements IMoleculeFragmenter {
         if (tmpShouldBeFiltered) {
             throw new IllegalArgumentException("The given molecule cannot be preprocessed but should be filtered.");
         }
-        //done internally by WURCS
+        //preprocessing is done internally by WURCS later
         return aMolecule.clone();
     }
 }
