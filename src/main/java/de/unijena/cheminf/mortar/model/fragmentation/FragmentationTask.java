@@ -192,7 +192,7 @@ public class FragmentationTask implements Callable<Integer> {
             }
             catch(Exception anException) {
                 this.exceptionsCounter++;
-                FragmentationTask.LOGGER.log(Level.SEVERE, anException.toString(), anException);
+                FragmentationTask.LOGGER.log(Level.SEVERE, String.format("Exception while fragmenting molecule with name: %s", tmpMolecule.getName()), anException);
                 if (tmpMolecule.getAllFragments() != null && !tmpMolecule.getAllFragments().containsKey(this.fragmentationName)) {
                     tmpMolecule.getAllFragments().put(this.fragmentationName, new ArrayList<>(0));
                 }

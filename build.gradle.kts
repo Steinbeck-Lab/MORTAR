@@ -26,6 +26,10 @@ repositories {
     mavenCentral()
     // CDK SNAPSHOT repository, uncomment if needed
     maven { url = uri("https://central.sonatype.com/repository/maven-snapshots/") }
+    // GitLab Maven repository for MolWURCS
+    maven { url = uri("https://gitlab.com/api/v4/projects/20390948/packages/maven") }
+    // GitLab Maven repository for WURCSFramework
+    maven { url = uri("https://gitlab.com/api/v4/projects/17725126/packages/maven") }
 }
 
 dependencies {
@@ -48,6 +52,7 @@ dependencies {
     implementation(libs.cdkFragment)
     implementation(libs.cdkScaffold)
     //</editor-fold>
+    implementation(libs.molWURCS)
     implementation(libs.openpdf)
     //<editor-fold desc="JavaFX dependencies">
     implementation(variantOf(libs.javafxControls) { classifier("win") })

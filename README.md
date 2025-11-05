@@ -35,10 +35,10 @@
 MORTAR ('MOlecule fRagmenTation fRamework') is a free and open-source graphical desktop application that supports 
 molecular <i>in silico</i> fragmentation and substructure analysis. The Java/JavaFX rich client offers extensive graphical 
 functions for visualizing the fragmentation results of individual compounds or entire compound sets. 
-In addition to three currently integrated methods for fragmentation and substructure analysis - 
+In addition to four currently integrated methods for fragmentation and substructure analysis - 
 <a href="https://github.com/JonasSchaub/ErtlFunctionalGroupsFinder">ErtlFunctionalGroupsFinder</a>, 
 <a href="https://github.com/JonasSchaub/SugarRemoval">Sugar Removal Utility</a> (with the <a href="https://github.com/cdk/cdk/pull/1225">Sugar Detection Utility</a> extension), 
-and <a href="https://github.com/cdk/cdk-scaffold">CDK-Scaffold</a> - MORTAR allows straightforward integration of 
+<a href="https://github.com/cdk/cdk-scaffold">CDK-Scaffold</a>, and <a href="https://gitlab.com/glycoinfo/molwurcs">MolWURCS</a> - MORTAR allows straightforward integration of 
 additional fragmentation algorithms to support the development of new methods at an early stage. 
 All cheminformatics functionalities are implemented based on the <a href="https://github.com/cdk/cdk">Chemistry Development Kit (CDK)</a>.<br>
 The scientific article describing MORTAR can be found here: 
@@ -213,6 +213,9 @@ will take care of it automatically.
 * Chemistry Development Kit (CDK) version 2.12-SNAPSHOT
     * [Chemistry Development Kit on GitHub](https://cdk.github.io/)
     * License: GNU Lesser General Public License 2.1
+* MolWURCS version 0.12.1
+  * [MolWURCS GitLab repository](https://gitlab.com/glycoinfo/molwurcs)
+  * License: Unknown
 * JUnit version 5.11.4
     * [JUnit 5](https://junit.org/junit5/)
     * License: Eclipse Public License 2.0
@@ -253,6 +256,11 @@ fragmentation (Baensch et al. 2023)</a>).
 * [T. Varin et al., “Compound Set Enrichment: A Novel Approach to Analysis of Primary HTS Data,” J. Chem. Inf. Model., vol. 50, no. 12, pp. 2067–2078, Dec. 2010, doi: 10.1021/ci100203e.](https://doi.org/10.1021/ci100203e)
 * [T. Varin, A. Schuffenhauer, P. Ertl, and S. Renner, “Mining for Bioactive Scaffolds with Scaffold Networks: Improved Compound Set Enrichment from Primary Screening Data,” J. Chem. Inf. Model., vol. 51, no. 7, pp. 1528–1538, Jul. 2011, doi: 10.1021/ci2000924.](https://doi.org/10.1021/ci2000924)
 * [C. Manelfi et al., “‘Molecular Anatomy’: a new multi-dimensional hierarchical scaffold analysis tool,” J Cheminform, vol. 13, no. 1, p. 54, Dec. 2021, doi: 10.1186/s13321-021-00526-y.](https://doi.org/10.1186/s13321-021-00526-y)
+
+**WURCS**
+* [Matsubara, M., Bolton, E.E., Aoki-Kinoshita, K.F. et al. Toward integration of glycan chemical databases: an algorithm and software tool for extracting sugars from chemical structures. Anal Bioanal Chem 417, 945–956 (2025). https://doi.org/10.1007/s00216-024-05508-1](https://doi.org/10.1007/s00216-024-05508-1)
+* [Masaaki Matsubara, Kiyoko F. Aoki-Kinoshita, Nobuyuki P. Aoki, Issaku Yamada, and Hisashi Narimatsu. WURCS 2.0 Update To Encapsulate Ambiguous Carbohydrate Structures. Journal of Chemical Information and Modeling 2017 57 (4), 632-637. https://doi.org/10.1021/acs.jcim.6b00650](https://doi.org/10.1021/acs.jcim.6b00650)
+* [Kenichi Tanaka, Kiyoko F. Aoki-Kinoshita, Masaaki Kotera, Hiromichi Sawaki, Shinichiro Tsuchiya, Noriaki Fujita, Toshihide Shikanai, Masaki Kato, Shin Kawano, Issaku Yamada, and Hisashi Narimatsu. WURCS: The Web3 Unique Representation of Carbohydrate Structures. Journal of Chemical Information and Modeling 2014 54 (6), 1558-1566. https://doi.org/10.1021/ci400571e](https://doi.org/10.1021/ci400571e)
 
 **Chemistry Development Kit (CDK)**
 * [Chemistry Development Kit on GitHub](https://cdk.github.io/)
