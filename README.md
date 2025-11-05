@@ -213,7 +213,7 @@ will take care of it automatically.
 * Chemistry Development Kit (CDK) version 2.12-SNAPSHOT
     * [Chemistry Development Kit on GitHub](https://cdk.github.io/)
     * License: GNU Lesser General Public License 2.1
-* MolWURCS version 1.2.12
+* MolWURCS version 0.12.1
   * [MolWURCS GitLab repository](https://gitlab.com/glycoinfo/molwurcs)
   * License: Unknown
 * JUnit version 5.11.4
