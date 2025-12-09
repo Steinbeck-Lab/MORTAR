@@ -32,6 +32,7 @@ import org.openscience.cdk.io.MDLV2000Reader;
 import org.openscience.cdk.silent.SilentChemObjectBuilder;
 import org.openscience.cdk.smiles.SmiFlavor;
 import org.openscience.cdk.smiles.SmilesGenerator;
+import org.openscience.cdk.smiles.SmilesParser;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 
 import java.io.File;
@@ -79,6 +80,7 @@ class ChemUtilTest {
             Assertions.assertEquals(tmpSmilesCode, tmpSmilesCodeOutput);
         }
     }
+    //
     /**
      * Test importing a MOL file containing a molecule with radicals and verifying that these are fixed correctly.
      */
@@ -93,5 +95,21 @@ class ChemUtilTest {
         ChemUtil.fixRadicals(tmpMolecule);
         SmilesGenerator smiGen = new SmilesGenerator(SmiFlavor.Canonical);
         Assertions.assertEquals("N=C1N=C2C3=C(N1)CCC3CC(C)C2CCCC", smiGen.create(tmpMolecule));
+    }
+    //
+    /**
+     * Tests fixing a molecule imported from an aromatic SMILES string that is missing an explicit H on an aromatic N.
+     */
+    @Test
+    public void testFixAromaticNitrogenAndCreateSMILES() throws Exception {
+        //CHEBI:929
+        String tmpSmilesCode = "Nc1nc(N[C@@H]2O[C@H](COP(=O)(O)OP(=O)(O)OP(=O)(O)O)[C@@H](O)[C@H]2O)c(N)c(=O)n1";
+        SmilesParser tmpSmiPar = new SmilesParser(SilentChemObjectBuilder.getInstance());
+        tmpSmiPar.kekulise(false);
+        IAtomContainer tmpMolecule = tmpSmiPar.parseSmiles(tmpSmilesCode);
+        String tmpFixedSmiles = ChemUtil.fixAromaticNitrogenAndCreateSMILES(tmpMolecule);
+        Assertions.assertNotNull(tmpFixedSmiles);
+        tmpSmiPar.kekulise(true);
+        Assertions.assertDoesNotThrow(() -> tmpSmiPar.parseSmiles(tmpFixedSmiles));
     }
 }

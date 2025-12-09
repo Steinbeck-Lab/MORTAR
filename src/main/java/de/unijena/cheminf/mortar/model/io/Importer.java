@@ -280,7 +280,7 @@ public class Importer {
         for (IAtomContainer tmpAtomContainer : anAtomContainerSet.atomContainers()) {
             //returns null if no SMILES code could be created
             String tmpSmiles = ChemUtil.createUniqueSmiles(tmpAtomContainer, isRegardStereo);
-            if (tmpSmiles == null) {
+            if (tmpSmiles == null || tmpSmiles.isBlank()) {
                 tmpExceptionCount++;
                 continue;
             }
@@ -297,7 +297,7 @@ public class Importer {
         Importer.LOGGER.log(Level.INFO, () -> String.format("Successfully imported %d molecules from file: %s; " +
                 "%d molecules could not be parsed into the internal data model (SMILES code generation failed). " +
                 "See above how many molecules could not be read from the input file at all or produced exceptions while preprocessing.",
-                anAtomContainerSet.getAtomContainerCount(), this.getFileName(), finalTmpExceptionCount));
+                anAtomContainerSet.getAtomContainerCount() - finalTmpExceptionCount, this.getFileName(), finalTmpExceptionCount));
         return tmpReturnList;
     }
     //

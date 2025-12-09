@@ -31,8 +31,10 @@ import de.unijena.cheminf.mortar.model.io.Importer;
 import org.openscience.cdk.CDKConstants;
 import org.openscience.cdk.aromaticity.Kekulization;
 import org.openscience.cdk.exception.CDKException;
+import org.openscience.cdk.exception.InvalidSmilesException;
 import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
+import org.openscience.cdk.interfaces.IElement;
 import org.openscience.cdk.interfaces.IMolecularFormula;
 import org.openscience.cdk.interfaces.ISingleElectron;
 import org.openscience.cdk.layout.StructureDiagramGenerator;
@@ -48,10 +50,13 @@ import org.openscience.cdk.tools.manipulator.MolecularFormulaManipulator;
 import javax.vecmath.Point2d;
 import javax.vecmath.Point3d;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Chemistry utility.
@@ -116,10 +121,17 @@ public final class ChemUtil {
             try {
                 tmpSmiles = SmilesGenerator.create(anAtomContainer, tmpFlavor, new int[anAtomContainer.getAtomCount()]);
             } catch (CDKException anException) {
-                IAtomContainer tmpAtomContainer = anAtomContainer.clone();
-                Kekulization.kekulize(tmpAtomContainer);
-                tmpSmiles = SmilesGenerator.create(tmpAtomContainer, tmpFlavor, new int[anAtomContainer.getAtomCount()]);
-                ChemUtil.LOGGER.log(Level.INFO, String.format("Kekulized molecule %s", anAtomContainer.getProperty(Importer.MOLECULE_NAME_PROPERTY_KEY)));
+                String tmpFixedSmiles = ChemUtil.fixAromaticNitrogenAndCreateSMILES(anAtomContainer);
+                if (tmpFixedSmiles != null) {
+                    IAtomContainer tmpFixedMol = ChemUtil.parseSmilesToAtomContainer(tmpFixedSmiles, true, false);
+                    tmpSmiles = SmilesGenerator.create(tmpFixedMol, tmpFlavor, new int[anAtomContainer.getAtomCount()]);
+                    ChemUtil.LOGGER.log(Level.INFO, String.format("Added hydrogen atom to aromatic nitrogen atom to produce valid Kekule structure of molecule %s", (String) anAtomContainer.getProperty(Importer.MOLECULE_NAME_PROPERTY_KEY)));
+                } else {
+                    IAtomContainer tmpAtomContainer = anAtomContainer.clone();
+                    Kekulization.kekulize(tmpAtomContainer);
+                    tmpSmiles = SmilesGenerator.create(tmpAtomContainer, tmpFlavor, new int[anAtomContainer.getAtomCount()]);
+                    ChemUtil.LOGGER.log(Level.INFO, String.format("Kekulized molecule %s", anAtomContainer.getProperty(Importer.MOLECULE_NAME_PROPERTY_KEY)));
+                }
             }
         } catch (CDKException | NullPointerException | IllegalArgumentException | CloneNotSupportedException | ArrayIndexOutOfBoundsException anException){
             ChemUtil.LOGGER.log(Level.SEVERE, String.format("%s; molecule name: %s", anException.toString(), anAtomContainer.getProperty(Importer.MOLECULE_NAME_PROPERTY_KEY)), anException);
@@ -417,6 +429,86 @@ public final class ChemUtil {
             ChemUtil.LOGGER.log(Level.INFO, "{0}", String.format("Fixed %d radicals in molecule with name %s.",
                     tmpSingleElectronCount, aMolecule.getProperty(Importer.MOLECULE_NAME_PROPERTY_KEY)));
         } //else: do nothing
+    }
+
+    /**
+     * For cases where an atom container cannot be kekulized (which is i.a. necessary for absolute SMILES code generation)
+     * because of insufficient valence saturation of aromatic nitrogen atoms (i.e. the SMILES code that was originally
+     * parsed was missing an "[nH]" instead of "n"), this method tries to fix this by adding such explicit hydrogen atoms
+     * to aromatic nitrogen atoms in all possible combinations. If successful, a valid (*non-absolute!*) SMILES code will
+     * be returned. If this does not fix the non-kekulizable molecule or the molecule does not contain aromatic nitrogen
+     * atoms, null is returned.
+     * Note: we generate a SMILES code first, operate on it to generate all the possible solutions, and check for validity
+     * by checking whether it can be parsed again by a SmilesParser that is kekulizing. This round-trip may not be optimal
+     * but operating on the atom container directly would require making multiple copies of it. This solution here
+     * is therefore less memory-intensive. Plus, since the problem originated from a faulty SMILES code at import in most
+     * cases, it is also easiest to correct it this way.
+     *
+     * @param aMolecule the molecule to attempt to fix
+     * @return a (*non-absolute!*) SMILES code if successful, null otherwise
+     */
+    public static String fixAromaticNitrogenAndCreateSMILES(IAtomContainer aMolecule) {
+        boolean tmpContainsAromaticN = false;
+        for (IAtom tmpAtom : aMolecule.atoms()) {
+            if (tmpAtom.getAtomicNumber().equals(IElement.N) && tmpAtom.isAromatic() && tmpAtom.getImplicitHydrogenCount() == 0) {
+                tmpContainsAromaticN = true;
+                break;
+            }
+        }
+        if (!tmpContainsAromaticN) {
+            return null;
+        }
+        String tmpSmiles;
+        try {
+            tmpSmiles = SmilesGenerator.create(aMolecule, SmiFlavor.UseAromaticSymbols | SmiFlavor.Stereo, new int[aMolecule.getAtomCount()]);
+        } catch (CDKException anException) {
+            return null;
+        }
+        // Pattern to match both 'n' and '[nH]' in SMILES
+        Pattern tmpNPattern = Pattern.compile("\\[nH]|n");
+        Matcher tmpNMatcher = tmpNPattern.matcher(tmpSmiles);
+        // Find all nitrogen positions
+        List<Integer> tmpAromaticNPositions = new ArrayList<>(aMolecule.getAtomCount());
+        List<String> tmpAromaticNTypes = new ArrayList<>(aMolecule.getAtomCount());
+        while (tmpNMatcher.find()) {
+            tmpAromaticNPositions.add(tmpNMatcher.start());
+            tmpAromaticNTypes.add(tmpNMatcher.group());
+        }
+        if (tmpAromaticNPositions.isEmpty()) {
+            return null;
+        }
+        // Generate all 2^n combinations
+        int tmpNCount = tmpAromaticNPositions.size();
+        int tmpNrOfTotalCombinations = (int) Math.pow(2, tmpNCount);
+        List<String> tmpTautomerSMILESCodesList = new ArrayList<>();
+        for (int i = 0; i < tmpNrOfTotalCombinations; i++) {
+            StringBuilder tmpTautomerSMILESCode = new StringBuilder(tmpSmiles);
+            int tmpOffset = 0;
+            for (int j = 0; j < tmpNCount; j++) {
+                int tmpPos = tmpAromaticNPositions.get(j) + tmpOffset;
+                String tmpCurrentType = tmpAromaticNTypes.get(j);
+                boolean tmpIsUseNH = ((i >> j) & 1) == 1;
+                String tmpReplacement = tmpIsUseNH ? "[nH]" : "n";
+                int tmpOldLength = tmpCurrentType.length();
+                int tmpNewLength = tmpReplacement.length();
+                tmpTautomerSMILESCode.replace(tmpPos, tmpPos + tmpOldLength, tmpReplacement);
+                tmpOffset += (tmpNewLength - tmpOldLength);
+            }
+            tmpTautomerSMILESCodesList.add(tmpTautomerSMILESCode.toString());
+        }
+        SmilesParser tmpSmiPar = new SmilesParser(SilentChemObjectBuilder.getInstance());
+        //needs to fail if kekulization is not possible
+        tmpSmiPar.kekulise(true);
+        for (String tmpTautomerSMILESCode : tmpTautomerSMILESCodesList) {
+            try {
+                tmpSmiPar.parseSmiles(tmpTautomerSMILESCode);
+            } catch (InvalidSmilesException anException) {
+                continue;
+            }
+            //if it can be parsed with kekulization, it is valid and therefore returned
+            return tmpTautomerSMILESCode;
+        }
+        return null;
     }
     //</editor-fold>
 }
