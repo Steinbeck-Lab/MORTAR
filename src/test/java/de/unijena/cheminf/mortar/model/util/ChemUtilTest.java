@@ -186,8 +186,7 @@ class ChemUtilTest {
                 CHEBI:131580	Cc1nn([C@H]2C[C@H](O)[C@@H](CO)O2)c(=O)nc1=O
                 CHEBI:131616	Nc1nc(=O)ncc1CO[C@@H]1O[C@H](CO)[C@@H](O)[C@H](O)[C@H]1O
                 CHEBI:131828	[H][C@]12O[C@H](C[C@@H]1O)n1c(nc3c(=O)nc(N)nc31)[C@H]2O
-                CHEBI:131829	[H][C@]12O[C@H](C[C@@H]1O)n1c(nc3c(=O)nc(N)nc31)[C@H]2OP(=O)(O)O
-                """;
+                CHEBI:131829	[H][C@]12O[C@H](C[C@@H]1O)n1c(nc3c(=O)nc(N)nc31)[C@H]2OP(=O)(O)O""";
         SmilesParser tmpSmipar = new SmilesParser(SilentChemObjectBuilder.getInstance());
         tmpSmipar.kekulise(false);
         List<String> tmpFailedMols = new ArrayList<>(10);

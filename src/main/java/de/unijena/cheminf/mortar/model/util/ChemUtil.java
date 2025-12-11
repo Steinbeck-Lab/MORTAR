@@ -469,7 +469,7 @@ public final class ChemUtil {
         if (aMolecule.isEmpty()) {
             return null;
         }
-        //count aromatic nitrogen atoms to chose appropriate initial collection sizes below
+        //count aromatic nitrogen atoms to choose appropriate initial collection sizes below and reject molecules without any
         int tmpAromaticNCount = 0;
         for (IAtom tmpAtom : aMolecule.atoms()) {
             if (tmpAtom.getAtomicNumber().equals(IElement.N) && tmpAtom.isAromatic()) {
@@ -506,10 +506,10 @@ public final class ChemUtil {
         tmpSmiPar.kekulise(true);
         // Generate all 2^n combinations but already validate while generating and return the first valid solution
         int tmpNCount = tmpAromaticNPositions.size();
-        int tmpNrOfTotalCombinations = (int) Math.pow(2, tmpNCount);
+        int tmpNrOfTotalCombinations = Math.min((int) Math.pow(2, tmpNCount), ChemUtil.MAX_TAUTOMER_COMBINATIONS);
         tautomerLoop:
         for (int i = 0; i < tmpNrOfTotalCombinations; i++) {
-            if (i > ChemUtil.MAX_TAUTOMER_COMBINATIONS) {
+            if (i >= ChemUtil.MAX_TAUTOMER_COMBINATIONS) {
                 ChemUtil.LOGGER.log(Level.INFO, "Generated 1,000 tautomers of molecule {0} and none were valid, so aborting",
                         (String) aMolecule.getProperty(Importer.MOLECULE_NAME_PROPERTY_KEY));
                 return null;
