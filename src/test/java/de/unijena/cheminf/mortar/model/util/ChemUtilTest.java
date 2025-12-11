@@ -32,12 +32,16 @@ import org.openscience.cdk.io.MDLV2000Reader;
 import org.openscience.cdk.silent.SilentChemObjectBuilder;
 import org.openscience.cdk.smiles.SmiFlavor;
 import org.openscience.cdk.smiles.SmilesGenerator;
+import org.openscience.cdk.smiles.SmilesParser;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 
 import java.io.File;
 import java.io.FileReader;
 import java.net.URL;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Tests for the utility functions in ChemUtil.
@@ -79,6 +83,7 @@ class ChemUtilTest {
             Assertions.assertEquals(tmpSmilesCode, tmpSmilesCodeOutput);
         }
     }
+    //
     /**
      * Test importing a MOL file containing a molecule with radicals and verifying that these are fixed correctly.
      */
@@ -93,5 +98,110 @@ class ChemUtilTest {
         ChemUtil.fixRadicals(tmpMolecule);
         SmilesGenerator smiGen = new SmilesGenerator(SmiFlavor.Canonical);
         Assertions.assertEquals("N=C1N=C2C3=C(N1)CCC3CC(C)C2CCCC", smiGen.create(tmpMolecule));
+    }
+    //
+    /**
+     * Makes sure that the Regex pattern in ChemUtil.fixAromaticNitrogenAndCreateSMILES() does not match 'n' in '[Sn]'.
+     */
+    @Test
+    public void testFixAromaticNitrogenAndCreateSMILESPattern() throws Exception {
+        //PubChem CID	16682804
+        String tmpSmiles = "CC(=O)O[Sn](C1=CC=CC=C1)(C2=CC=CC=C2)C3=CC=CC=C3";
+        Pattern tmpNPattern = Pattern.compile(ChemUtil.AROMATIC_N_REGEX);
+        Assertions.assertFalse(tmpNPattern.matcher(tmpSmiles).find());
+    }
+    //
+    /**
+     * Tests fixing a molecule imported from an aromatic SMILES string that is missing an explicit H on an aromatic N.
+     */
+    @Test
+    public void testFixAromaticNitrogenAndCreateSMILES() throws Exception {
+        //CHEBI:929 - one n needs to be fixed
+        String tmpSmilesCode = "Nc1nc(N[C@@H]2O[C@H](COP(=O)(O)OP(=O)(O)OP(=O)(O)O)[C@@H](O)[C@H]2O)c(N)c(=O)n1";
+        SmilesParser tmpSmiPar = new SmilesParser(SilentChemObjectBuilder.getInstance());
+        tmpSmiPar.kekulise(false);
+        IAtomContainer tmpMolecule = tmpSmiPar.parseSmiles(tmpSmilesCode);
+        String tmpFixedSmiles = ChemUtil.fixAromaticNitrogenAndCreateSMILES(tmpMolecule);
+        Assertions.assertNotNull(tmpFixedSmiles);
+        tmpSmiPar.kekulise(true);
+        Assertions.assertDoesNotThrow(() -> tmpSmiPar.parseSmiles(tmpFixedSmiles));
+    }
+    //
+    /**
+     * Tests fixing a molecule imported from an aromatic SMILES string that is missing explicit Hs on multiple aromatic N.
+     */
+    @Test
+    public void testFixAromaticNitrogensAndCreateSMILES() throws Exception {
+        //CHEBI:10048 - two n need to be fixed (without creating an uncharged(!) tetravalent N)
+        String tmpSmilesCode = "O=c1nc(=O)c2ncn([C@@H]3O[C@H](COP(=O)(O)OP(=O)(O)O)[C@@H](O)[C@H]3O)c2n1";
+        SmilesParser tmpSmiPar = new SmilesParser(SilentChemObjectBuilder.getInstance());
+        tmpSmiPar.kekulise(false);
+        IAtomContainer tmpMolecule = tmpSmiPar.parseSmiles(tmpSmilesCode);
+        String tmpFixedSmiles = ChemUtil.fixAromaticNitrogenAndCreateSMILES(tmpMolecule);
+        Assertions.assertNotNull(tmpFixedSmiles);
+        tmpSmiPar.kekulise(true);
+        Assertions.assertDoesNotThrow(() -> tmpSmiPar.parseSmiles(tmpFixedSmiles));
+    }
+    //
+    /**
+     * Tests fixing a molecule imported from an aromatic SMILES string that is missing an explicit H on a charged aromatic N.
+     */
+    @Test
+    public void testFixAromaticChargedNitrogenAndCreateSMILES() throws Exception {
+        //CHEBI:20794 - one aromatic n is charged and therefore needs to be tetravalent in the solution
+        String tmpSmilesCode = "C[n+]1cn([C@@H]2O[C@H](CO)[C@@H](O)[C@H]2O)c2nc(N)nc(=O)c21";
+        SmilesParser tmpSmiPar = new SmilesParser(SilentChemObjectBuilder.getInstance());
+        tmpSmiPar.kekulise(false);
+        IAtomContainer tmpMolecule = tmpSmiPar.parseSmiles(tmpSmilesCode);
+        String tmpFixedSmiles = ChemUtil.fixAromaticNitrogenAndCreateSMILES(tmpMolecule);
+        Assertions.assertNotNull(tmpFixedSmiles);
+        tmpSmiPar.kekulise(true);
+        Assertions.assertDoesNotThrow(() -> tmpSmiPar.parseSmiles(tmpFixedSmiles));
+        Assertions.assertEquals("C[n+]1cn([C@@H]2O[C@H](CO)[C@@H](O)[C@H]2O)c3[nH]c(N)nc(=O)c31", tmpFixedSmiles);
+    }
+    //
+    /**
+     * Tests fixing a molecule imported from an aromatic SMILES string that is missing an explicit H on an aromatic N
+     * based on a bulk of ChEBI molecules with this issue.
+     */
+    @Test
+    public void testFixAromaticNitrogenAndCreateSMILESBulk() throws Exception {
+        String tmpChEBISmiles = """
+                CHEBI:10048	O=c1nc(=O)c2ncn([C@@H]3O[C@H](COP(=O)(O)OP(=O)(O)O)[C@@H](O)[C@H]3O)c2n1
+                CHEBI:10049	O=c1nc(=O)c2ncn([C@@H]3O[C@H](COP(=O)(O)OP(=O)(O)OP(=O)(O)O)[C@@H](O)[C@H]3O)c2n1
+                CHEBI:10110	Cc1cn([C@H]2C[C@H](N=[N+]=[N-])[C@@H](CO)O2)c(=O)nc1=O
+                CHEBI:102257	Cc1nn([C@H]2C[C@H](O)[C@@H](COP(=O)(O)O)O2)c(=O)nc1=O
+                CHEBI:102485	O=C(O)c1cn([C@H]2C[C@H](O)[C@@H](CO)O2)c(=O)nc1=O
+                CHEBI:102517	O=C(O)c1cn([C@H]2C[C@H](O)[C@@H](COP(=O)(O)O)O2)c(=O)nc1=O
+                CHEBI:10502	Cc1cn([C@H]2C[C@H](O)[C@@H](COP(=O)(O)OP(=O)(O)O[C@H]3O[C@H](C)C[C@H](N)[C@H]3O)O2)c(=O)nc1=O
+                CHEBI:10525	Cc1cn([C@H]2C[C@H](O)[C@@H](COP(=O)(O)OP(=O)(O)O[C@@H]3C[C@@](C)(O)[C@@H](O)[C@H](C)O3)O2)c(=O)nc1=O
+                CHEBI:111511	O=c1nc(=O)n([C@H]2C[C@H](O)[C@@H](COP(=O)(O)O)O2)cc1CO[C@@H]1O[C@H](CO)[C@@H](O)[C@H](O)[C@H]1O
+                CHEBI:111513	O=c1nc(=O)n([C@H]2C[C@H](O)[C@@H](CO)O2)cc1CO[C@@H]1O[C@H](CO)[C@@H](O)[C@H](O)[C@H]1O
+                CHEBI:11515	[H]C(=O)Nc1c(N[C@@H]2O[C@H](COP(=O)(O)O)[C@@H](O)[C@H]2O)nc(N)nc1=O
+                CHEBI:115218	O=C(O)CNCc1cn([C@@H]2O[C@H](COP(=O)(O)O)[C@@H](O)[C@H]2O)c(=S)nc1=O
+                CHEBI:131188	Nc1ncnc2c([C@@H]3O[C@@H]4COP(=O)(O)O[C@H]4[C@H]3O)nnc12
+                CHEBI:131522	CN[C@H]1CC[C@@H](OP(=O)(O)OP(=O)(O)OC[C@H]2O[C@@H](n3cc(C)c(=O)nc3=O)C[C@@H]2O)O[C@@H]1C
+                CHEBI:131566	Nc1ncnc2c1ncn2[C@@H]1O[C@H](COP(=O)(O)O)[C@@H](OC(=O)[C@@H](N)Cc2cncn2)[C@H]1O
+                CHEBI:131575	Nc1ncnc2c1ncn2[C@@H]1O[C@H](COP(=O)(O)O)[C@@H](OC(=O)[C@@H](N)Cc2cnc3ccccc23)[C@H]1O
+                CHEBI:131580	Cc1nn([C@H]2C[C@H](O)[C@@H](CO)O2)c(=O)nc1=O
+                CHEBI:131616	Nc1nc(=O)ncc1CO[C@@H]1O[C@H](CO)[C@@H](O)[C@H](O)[C@H]1O
+                CHEBI:131828	[H][C@]12O[C@H](C[C@@H]1O)n1c(nc3c(=O)nc(N)nc31)[C@H]2O
+                CHEBI:131829	[H][C@]12O[C@H](C[C@@H]1O)n1c(nc3c(=O)nc(N)nc31)[C@H]2OP(=O)(O)O""";
+        SmilesParser tmpSmipar = new SmilesParser(SilentChemObjectBuilder.getInstance());
+        tmpSmipar.kekulise(false);
+        List<String> tmpFailedMols = new ArrayList<>(10);
+        for (String tmpLine : tmpChEBISmiles.split("\n")) {
+            String tmpFixedSmilesString = ChemUtil.fixAromaticNitrogenAndCreateSMILES(tmpSmipar.parseSmiles(tmpLine.split("\t")[1]));
+            if (tmpFixedSmilesString == null) {
+                tmpFailedMols.add(tmpLine);
+            }
+        }
+        if (!tmpFailedMols.isEmpty()) {
+            StringBuilder failMsg = new StringBuilder("Failed molecules:\n");
+            for (String tmpLine : tmpFailedMols) {
+                failMsg.append(tmpLine).append('\n');
+            }
+            Assertions.fail(failMsg.toString());
+        }
     }
 }
