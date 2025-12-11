@@ -102,7 +102,7 @@ class ChemUtilTest {
      */
     @Test
     public void testFixAromaticNitrogenAndCreateSMILES() throws Exception {
-        //CHEBI:929
+        //CHEBI:929 - one n needs to be fixed
         String tmpSmilesCode = "Nc1nc(N[C@@H]2O[C@H](COP(=O)(O)OP(=O)(O)OP(=O)(O)O)[C@@H](O)[C@H]2O)c(N)c(=O)n1";
         SmilesParser tmpSmiPar = new SmilesParser(SilentChemObjectBuilder.getInstance());
         tmpSmiPar.kekulise(false);
@@ -111,5 +111,38 @@ class ChemUtilTest {
         Assertions.assertNotNull(tmpFixedSmiles);
         tmpSmiPar.kekulise(true);
         Assertions.assertDoesNotThrow(() -> tmpSmiPar.parseSmiles(tmpFixedSmiles));
+    }
+    //
+    /**
+     * Tests fixing a molecule imported from an aromatic SMILES string that is missing explicit Hs on multiple aromatic N.
+     */
+    @Test
+    public void testFixAromaticNitrogensAndCreateSMILES() throws Exception {
+        //CHEBI:10048 - two n need to be fixed (without creating an uncharged(!) tetravalent N)
+        String tmpSmilesCode = "O=c1nc(=O)c2ncn([C@@H]3O[C@H](COP(=O)(O)OP(=O)(O)O)[C@@H](O)[C@H]3O)c2n1";
+        SmilesParser tmpSmiPar = new SmilesParser(SilentChemObjectBuilder.getInstance());
+        tmpSmiPar.kekulise(false);
+        IAtomContainer tmpMolecule = tmpSmiPar.parseSmiles(tmpSmilesCode);
+        String tmpFixedSmiles = ChemUtil.fixAromaticNitrogenAndCreateSMILES(tmpMolecule);
+        Assertions.assertNotNull(tmpFixedSmiles);
+        tmpSmiPar.kekulise(true);
+        Assertions.assertDoesNotThrow(() -> tmpSmiPar.parseSmiles(tmpFixedSmiles));
+    }
+    //
+    /**
+     * Tests fixing a molecule imported from an aromatic SMILES string that is missing an explicit H on a charged aromatic N.
+     */
+    @Test
+    public void testFixAromaticChargedNitrogenAndCreateSMILES() throws Exception {
+        //CHEBI:20794 - one aromatic n is charged and therefore needs to be tetravalent in the solution
+        String tmpSmilesCode = "C[n+]1cn([C@@H]2O[C@H](CO)[C@@H](O)[C@H]2O)c2nc(N)nc(=O)c21";
+        SmilesParser tmpSmiPar = new SmilesParser(SilentChemObjectBuilder.getInstance());
+        tmpSmiPar.kekulise(false);
+        IAtomContainer tmpMolecule = tmpSmiPar.parseSmiles(tmpSmilesCode);
+        String tmpFixedSmiles = ChemUtil.fixAromaticNitrogenAndCreateSMILES(tmpMolecule);
+        Assertions.assertNotNull(tmpFixedSmiles);
+        tmpSmiPar.kekulise(true);
+        Assertions.assertDoesNotThrow(() -> tmpSmiPar.parseSmiles(tmpFixedSmiles));
+        Assertions.assertEquals("C[n+]1cn([C@@H]2O[C@H](CO)[C@@H](O)[C@H]2O)c3[nH]c(N)nc(=O)c31", tmpFixedSmiles);
     }
 }
