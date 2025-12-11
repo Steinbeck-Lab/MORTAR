@@ -65,6 +65,19 @@ import java.util.regex.Pattern;
  * @version 1.0.0.0
  */
 public final class ChemUtil {
+    //<editor-fold desc="Public static final class constants">
+    /**
+     * Maximum number of different tautomers with explicit Hydrogen atoms added to aromatic Nitrogen atoms generated to
+     * get a structure that can be kekulized in {@link #fixAromaticNitrogenAndCreateSMILES(IAtomContainer)}.
+     */
+    public static final int MAX_TAUTOMER_COMBINATIONS = 1000;
+
+    /**
+     * Pattern to match both 'n' and '[nH]' in SMILES (but not 'n' in Rn, Sn, In, Cn, Zn, Mn)
+     */
+    public static String AROMATIC_N_REGEX = "\\[nH]|(?<!\\[[RSICZM])n";
+    //</editor-fold>
+    //
     //<editor-fold defaultstate="collapsed" desc="Private static final class constants">
     /**
      * Logger of this class.
@@ -438,7 +451,8 @@ public final class ChemUtil {
      * be returned that encodes aromaticity and stereochemistry. If this does not fix the non-kekulizable molecule or
      * the molecule does not contain aromatic nitrogen atoms, null is returned. This method does not check whether the
      * input molecule can be kekulized or not. If the molecule cannot be fixed with the first 1,000 possible solutions
-     * generated, the routine is aborted and null is returned.
+     * generated, the routine is aborted and null is returned. This limit is imposed to prevent excessive computation time
+     * (consider the exponential scaling of possible solutions) and most molecules should be fixed within this margin.
      * Note: we generate a SMILES code first, operate on it to generate all the possible solutions, and check for validity
      * by checking whether it can be parsed again by a SmilesParser that is kekulizing. This round-trip may not be optimal
      * but operating on the atom container directly would require making multiple copies of it. This solution here
@@ -455,17 +469,14 @@ public final class ChemUtil {
         if (aMolecule.isEmpty()) {
             return null;
         }
-        boolean tmpContainsAromaticN = false;
+        //count aromatic nitrogen atoms to chose appropriate initial collection sizes below
+        int tmpAromaticNCount = 0;
         for (IAtom tmpAtom : aMolecule.atoms()) {
-            if (tmpAtom.getAtomicNumber().equals(IElement.N)
-                    && tmpAtom.isAromatic()
-                    && tmpAtom.getImplicitHydrogenCount() != null
-                    && tmpAtom.getImplicitHydrogenCount() == 0) {
-                tmpContainsAromaticN = true;
-                break;
+            if (tmpAtom.getAtomicNumber().equals(IElement.N) && tmpAtom.isAromatic()) {
+                tmpAromaticNCount++;
             }
         }
-        if (!tmpContainsAromaticN) {
+        if (tmpAromaticNCount == 0) {
             return null;
         }
         //end of checks
@@ -477,11 +488,11 @@ public final class ChemUtil {
             return null;
         }
         // Pattern to match both 'n' and '[nH]' in SMILES (but not 'n' in Rn, Sn, In, Cn, Zn, Mn)
-        Pattern tmpNPattern = Pattern.compile("\\[nH]|(?<!\\[[RSICZM])n");
+        Pattern tmpNPattern = Pattern.compile(ChemUtil.AROMATIC_N_REGEX);
         Matcher tmpNMatcher = tmpNPattern.matcher(tmpSmiles);
         // Find all aromatic nitrogen positions
-        List<Integer> tmpAromaticNPositions = new ArrayList<>(aMolecule.getAtomCount());
-        List<String> tmpAromaticNTypes = new ArrayList<>(aMolecule.getAtomCount());
+        List<Integer> tmpAromaticNPositions = new ArrayList<>(tmpAromaticNCount);
+        List<String> tmpAromaticNTypes = new ArrayList<>(tmpAromaticNCount);
         while (tmpNMatcher.find()) {
             tmpAromaticNPositions.add(tmpNMatcher.start());
             tmpAromaticNTypes.add(tmpNMatcher.group());
@@ -498,7 +509,7 @@ public final class ChemUtil {
         int tmpNrOfTotalCombinations = (int) Math.pow(2, tmpNCount);
         tautomerLoop:
         for (int i = 0; i < tmpNrOfTotalCombinations; i++) {
-            if (i > 1000) { //magic number
+            if (i > ChemUtil.MAX_TAUTOMER_COMBINATIONS) {
                 ChemUtil.LOGGER.log(Level.INFO, "Generated 1,000 tautomers of molecule {0} and none were valid, so aborting",
                         (String) aMolecule.getProperty(Importer.MOLECULE_NAME_PROPERTY_KEY));
                 return null;
