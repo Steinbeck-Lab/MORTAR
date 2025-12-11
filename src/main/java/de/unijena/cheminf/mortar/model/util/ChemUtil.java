@@ -75,7 +75,7 @@ public final class ChemUtil {
     /**
      * Pattern to match both 'n' and '[nH]' in SMILES (but not 'n' in Rn, Sn, In, Cn, Zn, Mn)
      */
-    public static String AROMATIC_N_REGEX = "\\[nH]|(?<!\\[[RSICZM])n";
+    public static final String AROMATIC_N_REGEX = "\\[nH]|(?<!\\[[RSICZM])n";
     //</editor-fold>
     //
     //<editor-fold defaultstate="collapsed" desc="Private static final class constants">
