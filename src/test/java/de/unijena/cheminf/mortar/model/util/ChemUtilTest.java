@@ -39,6 +39,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.net.URL;
 import java.nio.file.Paths;
+import java.util.regex.Pattern;
 
 /**
  * Tests for the utility functions in ChemUtil.
@@ -95,6 +96,17 @@ class ChemUtilTest {
         ChemUtil.fixRadicals(tmpMolecule);
         SmilesGenerator smiGen = new SmilesGenerator(SmiFlavor.Canonical);
         Assertions.assertEquals("N=C1N=C2C3=C(N1)CCC3CC(C)C2CCCC", smiGen.create(tmpMolecule));
+    }
+    //CC(=O)O[Sn](C1=CC=CC=C1)(C2=CC=CC=C2)C3=CC=CC=C3
+    /**
+     * Makes sure that the Regex pattern in ChemUtil.fixAromaticNitrogenAndCreateSMILES() does not match 'n' in '[Sn]'.
+     */
+    @Test
+    public void testFixAromaticNitrogenAndCreateSMILESPattern() throws Exception {
+        //PubChem CID	16682804
+        String tmpSmiles = "CC(=O)O[Sn](C1=CC=CC=C1)(C2=CC=CC=C2)C3=CC=CC=C3";
+        Pattern tmpNPattern = Pattern.compile("\\[nH]|(?<!\\[[RSICZM])n");
+        Assertions.assertFalse(tmpNPattern.matcher(tmpSmiles).find());
     }
     //
     /**

@@ -437,7 +437,8 @@ public final class ChemUtil {
      * to aromatic nitrogen atoms in all possible combinations. If successful, a valid (*non-unique!*) SMILES code will
      * be returned that encodes aromaticity and stereochemistry. If this does not fix the non-kekulizable molecule or
      * the molecule does not contain aromatic nitrogen atoms, null is returned. This method does not check whether the
-     * input molecule can be kekulized or not.
+     * input molecule can be kekulized or not. If the molecule cannot be fixed with the first 1,000 possible solutions
+     * generated, the routine is aborted and null is returned.
      * Note: we generate a SMILES code first, operate on it to generate all the possible solutions, and check for validity
      * by checking whether it can be parsed again by a SmilesParser that is kekulizing. This round-trip may not be optimal
      * but operating on the atom container directly would require making multiple copies of it. This solution here
@@ -458,7 +459,8 @@ public final class ChemUtil {
         for (IAtom tmpAtom : aMolecule.atoms()) {
             if (tmpAtom.getAtomicNumber().equals(IElement.N)
                     && tmpAtom.isAromatic()
-                    && Integer.valueOf(0).equals(tmpAtom.getImplicitHydrogenCount())) {
+                    && tmpAtom.getImplicitHydrogenCount() != null
+                    && tmpAtom.getImplicitHydrogenCount() == 0) {
                 tmpContainsAromaticN = true;
                 break;
             }
@@ -474,7 +476,7 @@ public final class ChemUtil {
         } catch (CDKException anException) {
             return null;
         }
-        // Pattern to match both 'n' and '[nH]' in SMILES (but not 'n' in Rn, Sn, In, Cn, Zn, Mn
+        // Pattern to match both 'n' and '[nH]' in SMILES (but not 'n' in Rn, Sn, In, Cn, Zn, Mn)
         Pattern tmpNPattern = Pattern.compile("\\[nH]|(?<!\\[[RSICZM])n");
         Matcher tmpNMatcher = tmpNPattern.matcher(tmpSmiles);
         // Find all aromatic nitrogen positions
@@ -496,8 +498,8 @@ public final class ChemUtil {
         int tmpNrOfTotalCombinations = (int) Math.pow(2, tmpNCount);
         tautomerLoop:
         for (int i = 0; i < tmpNrOfTotalCombinations; i++) {
-            if (i > 1000) {
-                ChemUtil.LOGGER.log(Level.INFO, "Generated 1000 tautomers of molecule {0} and none were valid, so aborting",
+            if (i > 1000) { //magic number
+                ChemUtil.LOGGER.log(Level.INFO, "Generated 1,000 tautomers of molecule {0} and none were valid, so aborting",
                         (String) aMolecule.getProperty(Importer.MOLECULE_NAME_PROPERTY_KEY));
                 return null;
             }
@@ -524,7 +526,8 @@ public final class ChemUtil {
             }
             for (IAtom tmpAtom : tmpTautomerAtomContainer.atoms()) {
                 if (tmpAtom.getAtomicNumber().equals(IElement.N) && tmpAtom.isAromatic()) {
-                    int tmpValence = tmpTautomerAtomContainer.getConnectedBondsCount(tmpAtom) + tmpAtom.getImplicitHydrogenCount();
+                    Integer tmpImplicitH = tmpAtom.getImplicitHydrogenCount();
+                    int tmpValence = tmpTautomerAtomContainer.getConnectedBondsCount(tmpAtom) + (tmpImplicitH == null ? 0 : tmpImplicitH);
                     int tmpCharge = tmpAtom.getFormalCharge();
                     if (tmpValence == 4 && tmpCharge == 0) {
                         //the routine created a Nitrogen atom with valence 4 but no charge - invalid!
