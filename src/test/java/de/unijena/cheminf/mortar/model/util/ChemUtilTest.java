@@ -197,11 +197,11 @@ class ChemUtilTest {
             }
         }
         if (!tmpFailedMols.isEmpty()) {
-            System.out.println("Failed:");
+            StringBuilder failMsg = new StringBuilder("Failed molecules:\n");
             for (String tmpLine : tmpFailedMols) {
-                System.out.println(tmpLine);
+                failMsg.append(tmpLine).append('\n');
             }
-            Assertions.fail();
+            Assertions.fail(failMsg.toString());
         }
     }
 }

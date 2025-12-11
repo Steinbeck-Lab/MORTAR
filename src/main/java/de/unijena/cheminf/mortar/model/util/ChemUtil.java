@@ -509,11 +509,6 @@ public final class ChemUtil {
         int tmpNrOfTotalCombinations = Math.min((int) Math.pow(2, tmpNCount), ChemUtil.MAX_TAUTOMER_COMBINATIONS);
         tautomerLoop:
         for (int i = 0; i < tmpNrOfTotalCombinations; i++) {
-            if (i >= ChemUtil.MAX_TAUTOMER_COMBINATIONS) {
-                ChemUtil.LOGGER.log(Level.INFO, "Generated 1,000 tautomers of molecule {0} and none were valid, so aborting",
-                        (String) aMolecule.getProperty(Importer.MOLECULE_NAME_PROPERTY_KEY));
-                return null;
-            }
             StringBuilder tmpTautomerBuilder = new StringBuilder(tmpSmiles);
             int tmpOffset = 0;
             for (int j = 0; j < tmpNCount; j++) {
