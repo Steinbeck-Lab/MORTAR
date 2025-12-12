@@ -60,7 +60,7 @@ import java.util.logging.Logger;
  * available in MORTAR, using the <a href="https://doi.org/10.1007/s00216-024-05508-1">MolWURCS</a>
  * implementation of the identifier.
  * Note: we are not giving the option (via a setting) to validate ("double-check") the generated WURCS string
- * in side the WURCSWriter because we are anyway retranslating the generated WURCS string back into a molecule.
+ * inside the WURCSWriter because we are anyway retranslating the generated WURCS string back into a molecule.
  * The "double-check" routine of WURCS writer also checks whether the molecule generated from the WURCS string
  * (generated from the input molecule) would generate the same WURCS string again, to validate the uniqueness
  * of the identifier, but this is not necessary here because we are not displaying/exporting the WURCS string.
