@@ -59,6 +59,11 @@ import java.util.logging.Logger;
  * <a href="https://pubs.acs.org/doi/full/10.1021/ci400571e">WURCS glycoside identifier</a>
  * available in MORTAR, using the <a href="https://doi.org/10.1007/s00216-024-05508-1">MolWURCS</a>
  * implementation of the identifier.
+ * Note: we are not giving the option (via a setting) to validate ("double-check") the generated WURCS string
+ * inside the WURCSWriter because we are anyway retranslating the generated WURCS string back into a molecule.
+ * The "double-check" routine of WURCS writer also checks whether the molecule generated from the WURCS string
+ * (generated from the input molecule) would generate the same WURCS string again, to validate the uniqueness
+ * of the identifier, but this is not necessary here because we are not displaying/exporting the WURCS string.
  *
  * @author Jonas Schaub
  * @version 1.0.0.0
@@ -74,16 +79,6 @@ public class MolWURCSFragmenter implements IMoleculeFragmenter {
      * Default value for whether the aglycone part should be included in the output fragments.
      */
     public static final boolean OUTPUT_WITH_AGLYCONE_SETTING_DEFAULT = false;
-
-    /**
-     * Default value for whether double check should be performed in WURCSWriter.
-     */
-    public static final boolean DOUBLE_CHECK_SETTING_DEFAULT = false;
-
-    /**
-     * Default value for whether WURCS normalization should be applied before retranslating WURCS to molecule.
-     */
-    public static final boolean NORMALIZE_WURCS_BEFORE_RETRANSLATION_DEFAULT = true;
     //</editor-fold>
     //
     //<editor-fold desc="Private final variables">
@@ -106,16 +101,6 @@ public class MolWURCSFragmenter implements IMoleculeFragmenter {
      * Property for whether the aglycone part should be included in the output fragments.
      */
     private final SimpleBooleanProperty outputWithAglyconeSetting;
-
-    /**
-     * Property for whether double check should be performed in WURCSWriter.
-     */
-    private final SimpleBooleanProperty doubleCheckSetting;
-
-    /**
-     * Property for whether WURCS normalization should be applied before retranslating WURCS to molecule.
-     */
-    private final SimpleBooleanProperty normalizeWURCSBeforeRetranslationSetting;
     //</editor-fold>
     //
     //<editor-fold desc="Private static final constants">
@@ -130,7 +115,7 @@ public class MolWURCSFragmenter implements IMoleculeFragmenter {
      * Constructor, all settings are initialised with their default values.
      */
     public MolWURCSFragmenter() {
-        int tmpNumberOfSettings = 3;
+        int tmpNumberOfSettings = 1;
         this.settings = new ArrayList<>(tmpNumberOfSettings);
         int tmpInitialCapacityForSettingMaps = CollectionUtil.calculateInitialHashCollectionCapacity(
                 tmpNumberOfSettings,
@@ -144,21 +129,6 @@ public class MolWURCSFragmenter implements IMoleculeFragmenter {
                 Message.get("MolWURCSFragmenter.outputWithAglyconeSetting.displayName"));
         this.settingNameTooltipTextMap.put(this.outputWithAglyconeSetting.getName(),
                 Message.get("MolWURCSFragmenter.outputWithAglyconeSetting.tooltip"));
-        this.doubleCheckSetting = new SimpleBooleanProperty(this, "Double check setting",
-                MolWURCSFragmenter.DOUBLE_CHECK_SETTING_DEFAULT);
-        this.settings.add(this.doubleCheckSetting);
-        this.settingNameDisplayNameMap.put(this.doubleCheckSetting.getName(),
-                Message.get("MolWURCSFragmenter.doubleCheckSetting.displayName"));
-        this.settingNameTooltipTextMap.put(this.doubleCheckSetting.getName(),
-                Message.get("MolWURCSFragmenter.doubleCheckSetting.tooltip"));
-        this.normalizeWURCSBeforeRetranslationSetting = new SimpleBooleanProperty(this,
-                "Normalize WURCS before retranslation setting",
-                MolWURCSFragmenter.NORMALIZE_WURCS_BEFORE_RETRANSLATION_DEFAULT);
-        this.settings.add(this.normalizeWURCSBeforeRetranslationSetting);
-        this.settingNameDisplayNameMap.put(this.normalizeWURCSBeforeRetranslationSetting.getName(),
-                Message.get("MolWURCSFragmenter.normalizeWURCSBeforeRetranslationSetting.displayName"));
-        this.settingNameTooltipTextMap.put(this.normalizeWURCSBeforeRetranslationSetting.getName(),
-                Message.get("MolWURCSFragmenter.normalizeWURCSBeforeRetranslationSetting.tooltip"));
     }
     //</editor-fold>
     //
@@ -172,23 +142,6 @@ public class MolWURCSFragmenter implements IMoleculeFragmenter {
         return this.outputWithAglyconeSetting.get();
     }
 
-    /**
-     * Returns the currently set value of the double check setting.
-     *
-     * @return true, if double check is enabled; false, otherwise
-     */
-    public boolean getDoubleCheckSetting() {
-        return this.doubleCheckSetting.get();
-    }
-
-    /**
-     * Returns the currently set value of the 'normalize WURCS before retranslation setting'.
-     *
-     * @return true, if WURCS normalization is applied before retranslating WURCS to molecule; false, otherwise
-     */
-    public boolean getNormalizeWURCSBeforeRetranslationSetting() {
-        return this.normalizeWURCSBeforeRetranslationSetting.get();
-    }
     //</editor-fold>
     //
     //<editor-fold desc="Public properties set">
@@ -199,24 +152,6 @@ public class MolWURCSFragmenter implements IMoleculeFragmenter {
      */
     public void setOutputWithAglyconeSetting(boolean aBoolean) {
         this.outputWithAglyconeSetting.set(aBoolean);
-    }
-
-    /**
-     * Sets the value of the double check setting.
-     *
-     * @param aBoolean true, if double check should be performed by the WURCSWriter; false, otherwise
-     */
-    public void setDoubleCheckSetting(boolean aBoolean) {
-        this.doubleCheckSetting.set(aBoolean);
-    }
-
-    /**
-     * Sets the value of the 'normalize WURCS before retranslation' setting.
-     *
-     * @param aBoolean true, if WURCS normalization should be applied before retranslating WURCS to molecule; false, otherwise
-     */
-    public void setNormalizeWURCSBeforeRetranslationSetting(boolean aBoolean) {
-        this.normalizeWURCSBeforeRetranslationSetting.set(aBoolean);
     }
     //</editor-fold>
     //
@@ -252,16 +187,12 @@ public class MolWURCSFragmenter implements IMoleculeFragmenter {
     public IMoleculeFragmenter copy() {
         MolWURCSFragmenter tmpCopy = new MolWURCSFragmenter();
         tmpCopy.setOutputWithAglyconeSetting(this.getOutputWithAglyconeSetting());
-        tmpCopy.setDoubleCheckSetting(this.getDoubleCheckSetting());
-        tmpCopy.setNormalizeWURCSBeforeRetranslationSetting(this.getNormalizeWURCSBeforeRetranslationSetting());
         return tmpCopy;
     }
 
     @Override
     public void restoreDefaultSettings() {
         this.outputWithAglyconeSetting.set(MolWURCSFragmenter.OUTPUT_WITH_AGLYCONE_SETTING_DEFAULT);
-        this.doubleCheckSetting.set(MolWURCSFragmenter.DOUBLE_CHECK_SETTING_DEFAULT);
-        this.normalizeWURCSBeforeRetranslationSetting.set(MolWURCSFragmenter.NORMALIZE_WURCS_BEFORE_RETRANSLATION_DEFAULT);
     }
 
     @Override
@@ -280,7 +211,6 @@ public class MolWURCSFragmenter implements IMoleculeFragmenter {
         //note: safer to always initialise a new writer
         WURCSWriter tmpWURCSWriter = new WURCSWriter(tmpStringWriter);
         tmpWURCSWriter.setOutputWithAglycone(this.outputWithAglyconeSetting.get());
-        tmpWURCSWriter.setDoDoubleCheck(this.doubleCheckSetting.get());
         //set property key for molecule title for log messages
         tmpWURCSWriter.setTitlePropertyID(Importer.MOLECULE_NAME_PROPERTY_KEY);
         //little preprocessing to prevent WURCS from trying to deduce stereo config from coordinates that are not there
@@ -324,8 +254,10 @@ public class MolWURCSFragmenter implements IMoleculeFragmenter {
             }
             WURCSFactory tmpWURCSFactory;
             try {
+                //note, the WURCSParser in MolWURCS is package-private unfortunately; here, I basically copied what it
+                // would do internally
                 //factory has to be newly instantiated for every molecule
-                tmpWURCSFactory = new WURCSFactory(tmpWURCSCode, this.normalizeWURCSBeforeRetranslationSetting.get());
+                tmpWURCSFactory = new WURCSFactory(tmpWURCSCode);
                 WURCSGraph tmpWURCSGraph = tmpWURCSFactory.getGraph();
                 try {
                     tmpWURCSGraphToMol.start(tmpWURCSGraph);
