@@ -68,10 +68,10 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Package DMG (ARM)
-        if: matrix.os == 'macos-latest'
+        if: matrix.os == 'macos-15'
         run: ./gradlew --info --stacktrace localMacDmgArm
       - name: Package DMG (Intel)
-        if: matrix.os == 'macos-13'
+        if: matrix.os == 'macos-15-intel'
         run: ./gradlew --info --stacktrace localMacDmgIntel
       - name: Upload DMG as an artifact
         uses: actions/upload-artifact@v4
