@@ -5,6 +5,11 @@
 # This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
 
 name: Cross-Platform Deployment
+
+env:
+  APP_VERSION: "1.5.0.0"
+  APP_VERSION_SHORT: "1.5.0"
+
 on:
   push:
     branches: [ "main", "production" ]
@@ -42,7 +47,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: MORTAR_v1.5.0.0_WINx64_setup.exe
+          name: MORTAR_v${{ env.APP_VERSION }}_WINx64_setup.exe
           path: build\winDeploy\out\*.exe
 
   build-macos:
@@ -76,7 +81,7 @@ jobs:
       - name: Upload DMG as an artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.os == 'macos-15' && 'MORTAR-aarch64-1.5.0.dmg' || 'MORTAR-1.5.0.dmg' }}
+          name: ${{ matrix.os == 'macos-15' && format('MORTAR-aarch64-{0}.dmg', env.APP_VERSION_SHORT) || format('MORTAR-{0}.dmg', env.APP_VERSION_SHORT) }}
           path: ./*.dmg
           retention-days: 30
           compression-level: 0 # no compression since it makes no difference
@@ -107,7 +112,7 @@ jobs:
       - name: Upload DEB as an artifact
         uses: actions/upload-artifact@v4
         with:
-          name: MORTAR-1.5.0.deb
+          name: MORTAR-${{ env.APP_VERSION_SHORT }}.deb
           path: ./*.deb
           retention-days: 30
           compression-level: 0 # no compression since it makes no difference
@@ -116,7 +121,7 @@ jobs:
       - name: Upload RPM as an artifact
         uses: actions/upload-artifact@v4
         with:
-          name: MORTAR-1.5.0.rpm
+          name: MORTAR-${{ env.APP_VERSION_SHORT }}.rpm
           path: ./*.rpm
           retention-days: 30
           compression-level: 0 # no compression since it makes no difference
@@ -147,8 +152,8 @@ jobs:
       - name: Upload JAR as an artifact
         uses: actions/upload-artifact@v4
         with:
-          name: MORTAR-fat-1.5.0.0.jar
-          path: ./build/libs/MORTAR-fat-1.5.0.0.jar
+          name: MORTAR-fat-${{ env.APP_VERSION_SHORT }}.jar
+          path: ./build/libs/MORTAR-fat-${{ env.APP_VERSION_SHORT }}.jar
           retention-days: 30
           compression-level: 0 # no compression since it makes no difference
       - name: Build fatJarAarch64 with Gradle
@@ -156,7 +161,7 @@ jobs:
       - name: Upload Aarch64 JAR as an artifact
         uses: actions/upload-artifact@v4
         with:
-          name: MORTAR-fat-aarch64-1.5.0.0.jar
-          path: ./build/libs/MORTAR-fat-aarch64-1.5.0.0.jar
+          name: MORTAR-fat-aarch64-${{ env.APP_VERSION_SHORT }}.jar
+          path: ./build/libs/MORTAR-fat-aarch64-${{ env.APP_VERSION_SHORT }}.jar
           retention-days: 30
           compression-level: 0 # no compression since it makes no difference

@@ -33,6 +33,8 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 
 /**
  * Gradle task for local macOS deployment using jpackage.
@@ -112,11 +114,11 @@ open class LocalMacDeploy : DefaultTask() {
             val desiredFile = File(outputDir, desiredDmgName)
 
             if (defaultFile.exists()) {
-                val success = defaultFile.renameTo(desiredFile)
-                if (success) {
+                try {
+                    Files.move(defaultFile.toPath(), desiredFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
                     logger.lifecycle("Renamed DMG to: ${desiredFile.name}")
-                } else {
-                    logger.lifecycle("Failed to rename AARCH64 DMG.")
+                } catch (e: Exception) {
+                    throw org.gradle.api.GradleException("Failed to rename DMG: ${e.message}", e)
                 }
             }
         }

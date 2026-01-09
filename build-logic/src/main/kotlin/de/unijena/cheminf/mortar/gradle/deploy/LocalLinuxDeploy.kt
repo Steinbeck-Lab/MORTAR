@@ -33,6 +33,8 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 
 /**
  * Gradle task for local Linux deployment using jpackage.
@@ -110,11 +112,11 @@ open class LocalLinuxDeploy : DefaultTask() {
             val desiredFile = File(outputDir, desiredDebName)
 
             if (defaultFile.exists()) {
-                val success = defaultFile.renameTo(desiredFile)
-                if (success) {
+                try {
+                    Files.move(defaultFile.toPath(), desiredFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
                     logger.lifecycle("Renamed DEB to: ${desiredFile.name}")
-                } else {
-                    logger.lifecycle("Failed to rename DEB.")
+                } catch (e: Exception) {
+                    throw org.gradle.api.GradleException("Failed to rename DEB: ${e.message}", e)
                 }
             }
         } else if (pkgType == "rpm") {
@@ -126,11 +128,11 @@ open class LocalLinuxDeploy : DefaultTask() {
             val desiredFile = File(outputDir, desiredRpmName)
 
             if (defaultFile.exists()) {
-                val success = defaultFile.renameTo(desiredFile)
-                if (success) {
+                try {
+                    Files.move(defaultFile.toPath(), desiredFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
                     logger.lifecycle("Renamed RPM to: ${desiredFile.name}")
-                } else {
-                    logger.lifecycle("Failed to rename RPM.")
+                } catch (e: Exception) {
+                    throw org.gradle.api.GradleException("Failed to rename RPM: ${e.message}", e)
                 }
             }
         }
