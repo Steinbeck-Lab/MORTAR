@@ -153,7 +153,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: MORTAR-fat-${{ env.APP_VERSION_SHORT }}.jar
-          path: ./build/libs/MORTAR-fat-${{ env.APP_VERSION_SHORT }}.jar
+          path: ./build/libs/MORTAR-fat-${{ env.APP_VERSION }}.jar
           retention-days: 30
           compression-level: 0 # no compression since it makes no difference
       - name: Build fatJarAarch64 with Gradle
@@ -162,6 +162,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: MORTAR-fat-aarch64-${{ env.APP_VERSION_SHORT }}.jar
-          path: ./build/libs/MORTAR-fat-aarch64-${{ env.APP_VERSION_SHORT }}.jar
+          path: ./build/libs/MORTAR-fat-aarch64-${{ env.APP_VERSION }}.jar
           retention-days: 30
           compression-level: 0 # no compression since it makes no difference
