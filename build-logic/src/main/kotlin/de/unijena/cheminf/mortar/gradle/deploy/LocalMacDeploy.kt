@@ -33,6 +33,8 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 
 /**
  * Gradle task for local macOS deployment using jpackage.
@@ -102,5 +104,23 @@ open class LocalMacDeploy : DefaultTask() {
         }
 
         logger.lifecycle("macOS DMG created for $arch architecture")
+
+        if (arch == "arm") {
+            val defaultDmgName = "$appName-$appVersionShort.dmg"
+            val desiredDmgName = "$appName-aarch64-$appVersionShort.dmg"
+
+            val outputDir = project.rootDir
+            val defaultFile = File(outputDir, defaultDmgName)
+            val desiredFile = File(outputDir, desiredDmgName)
+
+            if (defaultFile.exists()) {
+                try {
+                    Files.move(defaultFile.toPath(), desiredFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                    logger.lifecycle("Renamed DMG to: ${desiredFile.name}")
+                } catch (e: Exception) {
+                    throw org.gradle.api.GradleException("Failed to rename DMG: ${e.message}", e)
+                }
+            }
+        }
     }
 }

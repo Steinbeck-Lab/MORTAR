@@ -5,6 +5,11 @@
 # This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
 
 name: Cross-Platform Deployment
+
+env:
+  APP_VERSION: "1.5.0.0"
+  APP_VERSION_SHORT: "1.5.0"
+
 on:
   push:
     branches: [ "main", "production" ]
@@ -42,7 +47,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: MORTAR-Windows-Setup
+          name: MORTAR_v${{ env.APP_VERSION }}_WINx64_setup.exe
           path: build\winDeploy\out\*.exe
 
   build-macos:
@@ -68,15 +73,15 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Package DMG (ARM)
-        if: matrix.os == 'macos-latest'
+        if: matrix.os == 'macos-15'
         run: ./gradlew --info --stacktrace localMacDmgArm
       - name: Package DMG (Intel)
-        if: matrix.os == 'macos-13'
+        if: matrix.os == 'macos-15-intel'
         run: ./gradlew --info --stacktrace localMacDmgIntel
       - name: Upload DMG as an artifact
         uses: actions/upload-artifact@v4
         with:
-          name: MORTAR-1.5.0-${{ matrix.os }}.dmg
+          name: ${{ matrix.os == 'macos-15' && format('MORTAR-aarch64-{0}.dmg', env.APP_VERSION_SHORT) || format('MORTAR-{0}.dmg', env.APP_VERSION_SHORT) }}
           path: ./*.dmg
           retention-days: 30
           compression-level: 0 # no compression since it makes no difference
@@ -107,7 +112,7 @@ jobs:
       - name: Upload DEB as an artifact
         uses: actions/upload-artifact@v4
         with:
-          name: MORTAR-1.5.0.deb
+          name: MORTAR-${{ env.APP_VERSION_SHORT }}.deb
           path: ./*.deb
           retention-days: 30
           compression-level: 0 # no compression since it makes no difference
@@ -116,7 +121,47 @@ jobs:
       - name: Upload RPM as an artifact
         uses: actions/upload-artifact@v4
         with:
-          name: MORTAR-1.5.0.rpm
+          name: MORTAR-${{ env.APP_VERSION_SHORT }}.rpm
           path: ./*.rpm
+          retention-days: 30
+          compression-level: 0 # no compression since it makes no difference
+
+  build-fat-jars:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        java: [ '21.0.1' ]
+    name: 'fat-jars'
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: 'temurin'
+      - name: Echo JAVA_HOME
+        run: echo $JAVA_HOME
+      - name: Verify Gradle Wrapper
+        uses: gradle/actions/wrapper-validation@v3
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Build fatJar with Gradle
+        run: ./gradlew --info --stacktrace fatJar
+      - name: Upload JAR as an artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MORTAR-fat-${{ env.APP_VERSION }}.jar
+          path: ./build/libs/MORTAR-fat-${{ env.APP_VERSION }}.jar
+          retention-days: 30
+          compression-level: 0 # no compression since it makes no difference
+      - name: Build fatJarAarch64 with Gradle
+        run: ./gradlew --info --stacktrace fatJarAarch64
+      - name: Upload Aarch64 JAR as an artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MORTAR-fat-aarch64-${{ env.APP_VERSION }}.jar
+          path: ./build/libs/MORTAR-fat-aarch64-${{ env.APP_VERSION }}.jar
           retention-days: 30
           compression-level: 0 # no compression since it makes no difference

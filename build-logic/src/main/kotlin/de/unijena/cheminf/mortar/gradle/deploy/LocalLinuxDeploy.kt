@@ -33,6 +33,8 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 
 /**
  * Gradle task for local Linux deployment using jpackage.
@@ -100,5 +102,39 @@ open class LocalLinuxDeploy : DefaultTask() {
         }
 
         logger.lifecycle("Linux package created: $pkgType")
+
+        if (pkgType == "deb") {
+            val defaultDebName = "${appName.lowercase()}${'_'}$appVersionShort${'_'}amd64.deb"
+            val desiredDebName = "$appName-$appVersionShort.deb"
+
+            val outputDir = project.rootDir
+            val defaultFile = File(outputDir, defaultDebName)
+            val desiredFile = File(outputDir, desiredDebName)
+
+            if (defaultFile.exists()) {
+                try {
+                    Files.move(defaultFile.toPath(), desiredFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                    logger.lifecycle("Renamed DEB to: ${desiredFile.name}")
+                } catch (e: Exception) {
+                    throw org.gradle.api.GradleException("Failed to rename DEB: ${e.message}", e)
+                }
+            }
+        } else if (pkgType == "rpm") {
+            val defaultRpmName = "${appName.lowercase()}-$appVersionShort-1.x86_64.rpm"
+            val desiredRpmName = "$appName-$appVersionShort.rpm"
+
+            val outputDir = project.rootDir
+            val defaultFile = File(outputDir, defaultRpmName)
+            val desiredFile = File(outputDir, desiredRpmName)
+
+            if (defaultFile.exists()) {
+                try {
+                    Files.move(defaultFile.toPath(), desiredFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                    logger.lifecycle("Renamed RPM to: ${desiredFile.name}")
+                } catch (e: Exception) {
+                    throw org.gradle.api.GradleException("Failed to rename RPM: ${e.message}", e)
+                }
+            }
+        }
     }
 }
