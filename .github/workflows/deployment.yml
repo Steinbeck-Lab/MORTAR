@@ -120,3 +120,44 @@ jobs:
           path: ./*.rpm
           retention-days: 30
           compression-level: 0 # no compression since it makes no difference
+
+  build-fat-jars:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        java: [ '21.0.1' ]
+    name: 'fat-jars'
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: 'temurin'
+      - name: Echo JAVA_HOME
+        run: echo $JAVA_HOME
+      - name: Verify Gradle Wrapper
+        uses: gradle/actions/wrapper-validation@v3
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Build fatJar with Gradle
+        run: ./gradlew --info --stacktrace fatJar
+      - name: Upload JAR as an artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MORTAR-fat-1.5.0.0.jar
+          path: ./*.jar
+          retention-days: 30
+          compression-level: 0 # no compression since it makes no difference
+      - name: Build fatJarAarch64 with Gradle
+        run: ./gradlew --info --stacktrace fatJarAarch64
+      - name: Upload JAR as an artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MORTAR-fat-aarch64-1.5.0.0.jar
+          path: ./*.jar
+          retention-days: 30
+          compression-level: 0 # no compression since it makes no difference
+          
