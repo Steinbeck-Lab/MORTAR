@@ -102,7 +102,7 @@ open class LocalLinuxDeploy : DefaultTask() {
         logger.lifecycle("Linux package created: $pkgType")
 
         if (pkgType == "deb") {
-            val defaultDebName = "$appName${'_'}$appVersionShort${'_'}amd64.deb"
+            val defaultDebName = "${appName.lowercase()}${'_'}$appVersionShort${'_'}amd64.deb"
             val desiredDebName = "$appName-$appVersionShort.deb"
 
             val outputDir = project.rootDir
@@ -118,7 +118,7 @@ open class LocalLinuxDeploy : DefaultTask() {
                 }
             }
         } else if (pkgType == "rpm") {
-            val defaultRpmName = "$appName-$appVersionShort-1.x86_64.rpm"
+            val defaultRpmName = "${appName.lowercase()}-$appVersionShort-1.x86_64.rpm"
             val desiredRpmName = "$appName-$appVersionShort.rpm"
 
             val outputDir = project.rootDir
