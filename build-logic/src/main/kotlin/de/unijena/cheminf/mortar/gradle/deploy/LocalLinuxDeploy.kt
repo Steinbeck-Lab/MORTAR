@@ -100,5 +100,39 @@ open class LocalLinuxDeploy : DefaultTask() {
         }
 
         logger.lifecycle("Linux package created: $pkgType")
+
+        if (pkgType == "deb") {
+            val defaultDebName = "$appName${'_'}$appVersionShort${'_'}amd64.deb"
+            val desiredDebName = "$appName-$appVersionShort.deb"
+
+            val outputDir = project.rootDir
+            val defaultFile = File(outputDir, defaultDebName)
+            val desiredFile = File(outputDir, desiredDebName)
+
+            if (defaultFile.exists()) {
+                val success = defaultFile.renameTo(desiredFile)
+                if (success) {
+                    logger.lifecycle("Renamed DEB to: ${desiredFile.name}")
+                } else {
+                    logger.lifecycle("Failed to rename DEB.")
+                }
+            }
+        } else if (pkgType == "rpm") {
+            val defaultRpmName = "$appName-$appVersionShort-1.x86_64.rpm"
+            val desiredRpmName = "$appName-$appVersionShort.rpm"
+
+            val outputDir = project.rootDir
+            val defaultFile = File(outputDir, defaultRpmName)
+            val desiredFile = File(outputDir, desiredRpmName)
+
+            if (defaultFile.exists()) {
+                val success = defaultFile.renameTo(desiredFile)
+                if (success) {
+                    logger.lifecycle("Renamed RPM to: ${desiredFile.name}")
+                } else {
+                    logger.lifecycle("Failed to rename RPM.")
+                }
+            }
+        }
     }
 }
