@@ -102,5 +102,23 @@ open class LocalMacDeploy : DefaultTask() {
         }
 
         logger.lifecycle("macOS DMG created for $arch architecture")
+
+        if (arch == "arm") {
+            val defaultDmgName = "$appName-$appVersionShort.dmg"
+            val desiredDmgName = "$appName-aarch64-$appVersionShort.dmg"
+
+            val outputDir = project.rootDir
+            val defaultFile = File(outputDir, defaultDmgName)
+            val desiredFile = File(outputDir, desiredDmgName)
+
+            if (defaultFile.exists()) {
+                val success = defaultFile.renameTo(desiredFile)
+                if (success) {
+                    logger.lifecycle("Renamed DMG to: ${desiredFile.name}")
+                } else {
+                    logger.lifecycle("Failed to rename AARCH64 DMG.")
+                }
+            }
+        }
     }
 }

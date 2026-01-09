@@ -76,7 +76,7 @@ jobs:
       - name: Upload DMG as an artifact
         uses: actions/upload-artifact@v4
         with:
-          name: MORTAR-1.5.0-${{ matrix.os }}.dmg
+          name: ${{ matrix.os == 'macos-15-intel' && 'MORTAR-aarch64-1.5.0.dmg' || 'MORTAR-1.5.0.dmg' }}
           path: ./*.dmg
           retention-days: 30
           compression-level: 0 # no compression since it makes no difference
