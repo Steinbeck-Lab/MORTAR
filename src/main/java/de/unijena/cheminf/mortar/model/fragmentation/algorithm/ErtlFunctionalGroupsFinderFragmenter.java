@@ -70,7 +70,7 @@ public class ErtlFunctionalGroupsFinderFragmenter implements IMoleculeFragmenter
     /**
      * Enum for options concerning the environment of returned functional group fragments.
      */
-    public static enum FGEnvOption implements IDisplayEnum {
+    public enum FGEnvOption implements IDisplayEnum {
         /**
          * Generalize environments of functional groups.
          */
@@ -125,7 +125,7 @@ public class ErtlFunctionalGroupsFinderFragmenter implements IMoleculeFragmenter
      * Enum for defining which fragments should be returned by the fragmentation methods, only the functional groups,
      * only the alkane fragments, or both.
      */
-    public static enum EFGFFragmenterReturnedFragmentsOption implements IDisplayEnum {
+    public enum EFGFFragmenterReturnedFragmentsOption implements IDisplayEnum {
         /**
          * Option to return only the identified functional groups of a molecule after fragmentation.
          */

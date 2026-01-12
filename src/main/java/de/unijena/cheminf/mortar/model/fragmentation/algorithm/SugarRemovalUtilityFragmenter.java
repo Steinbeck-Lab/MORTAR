@@ -70,7 +70,7 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
     /**
      * Enum for options concerning the type of sugars to remove or detect.
      */
-    public static enum SugarTypeToRemoveOption implements IDisplayEnum {
+    public enum SugarTypeToRemoveOption implements IDisplayEnum {
         /**
          * Remove/detect only circular sugars.
          */
@@ -122,7 +122,7 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
      * Enum for defining which fragments should be returned by the fragmentation methods, only the sugars,
      * only the aglycones, or both.
      */
-    public static enum SRUFragmenterReturnedFragmentsOption implements IDisplayEnum {
+    public enum SRUFragmenterReturnedFragmentsOption implements IDisplayEnum {
         /**
          * Option to return only the identified sugar moieties of a molecule after fragmentation.
          */
@@ -175,7 +175,7 @@ public class SugarRemovalUtilityFragmenter implements IMoleculeFragmenter {
      * removal of a sugar moiety should be preserved or can get removed along with the sugar.
      * Wraps the enum PreservationMode from SugarRemovalUtility to be able to add display name and tooltip here.
      */
-    public static enum SRUFragmenterPreservationMode implements IDisplayEnum {
+    public enum SRUFragmenterPreservationMode implements IDisplayEnum {
         /**
          * Specifies that all structures should be preserved. Note that if this option is combined with the removal of
          * only terminal moieties, even the smallest attached structure will prevent the removal of a sugar. The most

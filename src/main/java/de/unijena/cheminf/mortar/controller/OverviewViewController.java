@@ -95,7 +95,7 @@ public class OverviewViewController implements IViewToolController {
     /**
      * Enum for different data sources whose data can be displayed in the overview view.
      */
-    public static enum DataSources {
+    public enum DataSources {
         /**
          * Enum value for the molecules tab as data source.
          */

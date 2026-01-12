@@ -67,7 +67,7 @@ public class ScaffoldGeneratorFragmenter implements IMoleculeFragmenter {
      * Enum for defining which SmiFlavor is used for the SmilesGenerator.
      * The SmilesGenerator is used for the enumerative fragmentation.
      */
-    public static enum SmilesGeneratorOption implements IDisplayEnum {
+    public enum SmilesGeneratorOption implements IDisplayEnum {
         /**
          * Output canonical SMILES without stereochemistry and without atomic masses.
          */
@@ -113,7 +113,7 @@ public class ScaffoldGeneratorFragmenter implements IMoleculeFragmenter {
     /**
      * Enum that defines whether only scaffolds, only side chains, or both are to be generated.
      */
-    public static enum SideChainOption implements IDisplayEnum {
+    public enum SideChainOption implements IDisplayEnum {
         /**
          * Generate only the scaffold without side chains.
          */
@@ -164,7 +164,7 @@ public class ScaffoldGeneratorFragmenter implements IMoleculeFragmenter {
     /**
      * Enum for defining which kind of fragmentation is used and shows how much fragmentation is to take place.
      */
-    public static enum FragmentationTypeOption implements IDisplayEnum {
+    public enum FragmentationTypeOption implements IDisplayEnum {
         /**
          * {@link ScaffoldGenerator#applyEnumerativeRemoval(IAtomContainer)} is used.
          */
