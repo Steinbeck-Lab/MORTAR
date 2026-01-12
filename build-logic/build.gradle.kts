@@ -72,7 +72,7 @@ tasks.register("generateBundlePropertyNames") {
             //<editor-fold desc="MORTAR license header">
             appendLine("/*")
             appendLine(" * MORTAR - MOlecule fRagmenTAtion fRamework")
-            appendLine(" * Copyright (C) 2025 Felix Baensch, Jonas Schaub (felix.j.baensch@gmail.com, jonas.schaub@uni-jena.de)")
+            appendLine(" * Copyright (C) 2026 Felix Baensch, Jonas Schaub (felix.j.baensch@gmail.com, jonas.schaub@uni-jena.de)")
             appendLine(" *")
             appendLine(" * Source code is available at <https://github.com/FelixBaensch/MORTAR>")
             appendLine(" *")

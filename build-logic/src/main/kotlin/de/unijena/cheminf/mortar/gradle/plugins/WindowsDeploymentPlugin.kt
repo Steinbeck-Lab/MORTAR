@@ -1,6 +1,6 @@
 /*
  * MORTAR - MOlecule fRagmenTAtion fRamework
- * Copyright (C) 2025
+ * Copyright (C) 2026
  */
 package de.unijena.cheminf.mortar.gradle.plugins
 
