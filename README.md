@@ -222,7 +222,7 @@ will take care of it automatically.
 * LibrePDF OpenPDF version 2.0.3
   * [OpenPDF GitHub repository](https://github.com/LibrePDF/OpenPDF)
   * License: GNU Lesser General Public License 2.1
-* Spotless version 7.0.2
+* Spotless version 8.1.0
   * [Spotless GitHub repository](https://github.com/diffplug/spotless)
   * License: Apache-2.0 license
 
