@@ -8,7 +8,7 @@ openpdf-version = "2.0.3"
 
 # plugins
 javafxplugin-version = "0.1.0"
-spotless-version = "7.0.2"
+spotless-version = "8.1.0"
 
 [libraries]
 cdkPdb = { group = "org.openscience.cdk", name = "cdk-pdb", version.ref = "cdk-version" }
@@ -26,6 +26,8 @@ cdkStandard = { group = "org.openscience.cdk", name = "cdk-standard", version.re
 cdkValencycheck = { group = "org.openscience.cdk", name = "cdk-valencycheck", version.ref = "cdk-version" }
 cdkFragment = { group = "org.openscience.cdk", name = "cdk-fragment", version.ref = "cdk-version" }
 cdkScaffold = { group = "org.openscience.cdk", name = "cdk-scaffold", version.ref = "cdkScaffold-version" }
+
+molWURCS = { group = "org.glycoinfo", name = "MolWURCS", version = "0.12.1" }
 
 openpdf = { group = "com.github.librepdf", name = "openpdf", version.ref = "openpdf-version" }
 javafxControls = { group = "org.openjfx", name = "javafx-controls", version.ref = "javafx-version" }

@@ -1,6 +1,6 @@
 /*
  * MORTAR - MOlecule fRagmenTAtion fRamework
- * Copyright (C) 2025  Felix Baensch, Jonas Schaub (felix.j.baensch@gmail.com, jonas.schaub@uni-jena.de)
+ * Copyright (C) 2026  Felix Baensch, Jonas Schaub (felix.j.baensch@gmail.com, jonas.schaub@uni-jena.de)
  *
  * Source code is available at <https://github.com/FelixBaensch/MORTAR>
  *
@@ -31,6 +31,7 @@ import de.unijena.cheminf.mortar.model.data.FragmentDataModel;
 import de.unijena.cheminf.mortar.model.data.MoleculeDataModel;
 import de.unijena.cheminf.mortar.model.fragmentation.algorithm.ErtlFunctionalGroupsFinderFragmenter;
 import de.unijena.cheminf.mortar.model.fragmentation.algorithm.IMoleculeFragmenter;
+import de.unijena.cheminf.mortar.model.fragmentation.algorithm.MolWURCSFragmenter;
 import de.unijena.cheminf.mortar.model.fragmentation.algorithm.ScaffoldGeneratorFragmenter;
 import de.unijena.cheminf.mortar.model.fragmentation.algorithm.SugarRemovalUtilityFragmenter;
 import de.unijena.cheminf.mortar.model.util.BasicDefinitions;
@@ -194,6 +195,11 @@ public class FragmentationService {
     private final IMoleculeFragmenter scaffoldGF;
     //
     /**
+     * MolWURCS fragmenter.
+     */
+    private final IMoleculeFragmenter molWURCSF;
+    //
+    /**
      * Property of display name of selected fragmenter.
      */
     private final SimpleStringProperty selectedFragmenterDisplayNameProperty;
@@ -205,13 +211,15 @@ public class FragmentationService {
      */
     public FragmentationService() {
         //Note: Every fragmenter class should only be added once to the array or there will be problems with setting persistence!
-        this.fragmenters = new IMoleculeFragmenter[3];
+        this.fragmenters = new IMoleculeFragmenter[4];
         this.ertlFGF = new ErtlFunctionalGroupsFinderFragmenter();
         this.fragmenters[0] = this.ertlFGF;
         this.sugarRUF = new SugarRemovalUtilityFragmenter();
         this.fragmenters[1] = this.sugarRUF;
         this.scaffoldGF = new ScaffoldGeneratorFragmenter();
         this.fragmenters[2] = this.scaffoldGF;
+        this.molWURCSF = new MolWURCSFragmenter();
+        this.fragmenters[3] = this.molWURCSF;
         //
         this.selectedFragmenterDisplayNameProperty = new SimpleStringProperty();
         try {

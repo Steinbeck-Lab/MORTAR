@@ -1,6 +1,6 @@
 /*
  * MORTAR - MOlecule fRagmenTAtion fRamework
- * Copyright (C) 2025  Felix Baensch, Jonas Schaub (felix.j.baensch@gmail.com, jonas.schaub@uni-jena.de)
+ * Copyright (C) 2026  Felix Baensch, Jonas Schaub (felix.j.baensch@gmail.com, jonas.schaub@uni-jena.de)
  *
  * Source code is available at <https://github.com/FelixBaensch/MORTAR>
  *
@@ -31,8 +31,12 @@ import de.unijena.cheminf.mortar.gradle.util.DeployUtil
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
+import org.gradle.process.ExecOperations
 
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
+import javax.inject.Inject
 
 /**
  * Gradle task for local Linux deployment using jpackage.
@@ -48,7 +52,9 @@ import java.io.File
  *
  * @author Martin Urban
  */
-open class LocalLinuxDeploy : DefaultTask() {
+open class LocalLinuxDeploy @Inject constructor(
+    private val execOperations: ExecOperations
+) : DefaultTask() {
     init {
         description = MortarBundle.message(PropertyNames.LOCAL_DEPLOY_LINUX_DESC)
         group = MortarBundle.message(PropertyNames.LOCAL_DEPLOY_GRADLE_GROUP)
@@ -94,11 +100,45 @@ open class LocalLinuxDeploy : DefaultTask() {
             "--java-options", MortarBundle.message(PropertyNames.LOCAL_DEPLOY_UNIX_JAVA_OPTION_2)
         )
 
-        project.exec {
+        execOperations.exec {
             workingDir = project.rootDir
             commandLine(cmd)
         }
 
         logger.lifecycle("Linux package created: $pkgType")
+
+        if (pkgType == "deb") {
+            val defaultDebName = "${appName.lowercase()}${'_'}$appVersionShort${'_'}amd64.deb"
+            val desiredDebName = "$appName-$appVersionShort.deb"
+
+            val outputDir = project.rootDir
+            val defaultFile = File(outputDir, defaultDebName)
+            val desiredFile = File(outputDir, desiredDebName)
+
+            if (defaultFile.exists()) {
+                try {
+                    Files.move(defaultFile.toPath(), desiredFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                    logger.lifecycle("Renamed DEB to: ${desiredFile.name}")
+                } catch (e: Exception) {
+                    throw org.gradle.api.GradleException("Failed to rename DEB: ${e.message}", e)
+                }
+            }
+        } else if (pkgType == "rpm") {
+            val defaultRpmName = "${appName.lowercase()}-$appVersionShort-1.x86_64.rpm"
+            val desiredRpmName = "$appName-$appVersionShort.rpm"
+
+            val outputDir = project.rootDir
+            val defaultFile = File(outputDir, defaultRpmName)
+            val desiredFile = File(outputDir, desiredRpmName)
+
+            if (defaultFile.exists()) {
+                try {
+                    Files.move(defaultFile.toPath(), desiredFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
+                    logger.lifecycle("Renamed RPM to: ${desiredFile.name}")
+                } catch (e: Exception) {
+                    throw org.gradle.api.GradleException("Failed to rename RPM: ${e.message}", e)
+                }
+            }
+        }
     }
 }

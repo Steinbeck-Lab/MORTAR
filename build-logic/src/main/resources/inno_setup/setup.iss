@@ -4,7 +4,7 @@
 WizardStyle=modern
 AppName={#thisAppName}
 AppVersion={#thisAppVersion}
-AppCopyright=Copyright (C) 2024  Felix Baensch, Jonas Schaub; licensed under MIT license
+AppCopyright=Copyright (C) 2026  Felix Baensch, Jonas Schaub; licensed under MIT license
 AppId={{{#thisAppId}}
 DefaultDirName={commonpf}\{#thisAppName}\{#thisAppName}v{#thisAppVersion}
 AppPublisher={#thisAppName}

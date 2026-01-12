@@ -1,6 +1,6 @@
 /*
  * MORTAR - MOlecule fRagmenTAtion fRamework
- * Copyright (C) 2025  Felix Baensch, Jonas Schaub (felix.j.baensch@gmail.com, jonas.schaub@uni-jena.de)
+ * Copyright (C) 2026  Felix Baensch, Jonas Schaub (felix.j.baensch@gmail.com, jonas.schaub@uni-jena.de)
  *
  * Source code is available at <https://github.com/FelixBaensch/MORTAR>
  *
@@ -26,15 +26,14 @@
 package de.unijena.cheminf.mortar.model.io;
 
 import de.unijena.cheminf.mortar.model.util.BasicDefinitions;
+import de.unijena.cheminf.mortar.model.util.ChemUtil;
 import de.unijena.cheminf.mortar.model.util.FileUtil;
 
 import org.openscience.cdk.AtomContainerSet;
+import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.exception.InvalidSmilesException;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IAtomContainerSet;
-import org.openscience.cdk.interfaces.IChemObjectBuilder;
-import org.openscience.cdk.silent.SilentChemObjectBuilder;
-import org.openscience.cdk.smiles.SmilesParser;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -132,10 +131,8 @@ public class DynamicSMILESFileReader {
                 FileReader tmpSmilesFileReader = new FileReader(aFile);
                 BufferedReader tmpSmilesFileBufferedReader = new BufferedReader(tmpSmilesFileReader, BasicDefinitions.BUFFER_SIZE)
         ) {
-            IChemObjectBuilder tmpBuilder = SilentChemObjectBuilder.getInstance();
             // AtomContainer to save the parsed SMILES in
-            IAtomContainer tmpMolecule = tmpBuilder.newAtomContainer();
-            SmilesParser tmpSmilesParser = new SmilesParser(tmpBuilder);
+            IAtomContainer tmpMolecule = null;
             String tmpSmilesFileDeterminedSeparator = String.valueOf(DynamicSMILESFileFormat.PLACEHOLDER_SEPARATOR_CHAR);
             int tmpSmilesCodeExpectedPosition = DynamicSMILESFileFormat.DEFAULT_SMILES_COLUMN_POSITION;
             int tmpIDExpectedPosition = DynamicSMILESFileFormat.PLACEHOLDER_ID_COLUMN_POSITION;
@@ -159,15 +156,20 @@ public class DynamicSMILESFileReader {
                         && DynamicSMILESFileReader.containsOnlySMILESValidCharacters(tmpSmilesFileCurrentLine)
                         && !DynamicSMILESFileReader.PARSABLE_SMILES_EXCEPTIONS.contains(tmpSmilesFileCurrentLine.trim())) {
                     try {
-                        //if parsing fails goes to catch block below
-                        // trimmed because a leading whitespace followed by a character string are interpreted as an empty structure and its name
-                        tmpMolecule = tmpSmilesParser.parseSmiles(tmpSmilesFileCurrentLine.trim());
-                        if (!tmpMolecule.isEmpty()) {
+                        try{
+                            //if parsing fails goes to catch block below
+                            //trimmed because a leading whitespace followed by a character string are interpreted as an empty structure and its name
+                            tmpMolecule = ChemUtil.parseSmilesToAtomContainer(tmpSmilesFileCurrentLine.trim(), true, false);
+                        } catch (CDKException aCdkException){
+                            //if it fails again, goes to catch block below
+                            tmpMolecule = ChemUtil.parseSmilesToAtomContainer(tmpSmilesFileCurrentLine.trim(), false, false);
+                        }
+                        if (tmpMolecule != null && !tmpMolecule.isEmpty()) {
                             //success, SMILES column is identified
                             tmpSmilesCodeExpectedPosition = 0;
                             break findSeparatorLoop;
                         }
-                    } catch (InvalidSmilesException anException) {
+                    } catch (CDKException anException) {
                         // do nothing, continue with splitting the line using different separators
                     }
                 }
@@ -186,9 +188,15 @@ public class DynamicSMILESFileReader {
                             break; //... try next separator
                         }
                         try {
-                            //if parsing fails goes to catch block below
-                            tmpMolecule = tmpSmilesParser.parseSmiles(tmpNextElementOfLine.trim());
-                            if (!tmpMolecule.isEmpty()) {
+                            try{
+                                //if parsing fails goes to catch block below
+                                //trimmed because a leading whitespace followed by a character string are interpreted as an empty structure and its name
+                                tmpMolecule = ChemUtil.parseSmilesToAtomContainer(tmpNextElementOfLine.trim(), true, false);
+                            } catch (CDKException aCdkException){
+                                //if it fails again, goes to catch block below
+                                tmpMolecule = ChemUtil.parseSmilesToAtomContainer(tmpNextElementOfLine.trim(), false, false);
+                            }
+                            if (tmpMolecule != null && !tmpMolecule.isEmpty()) {
                                 //success, separator and SMILES column are identified
                                 tmpSmilesFileDeterminedSeparator = tmpSeparator;
                                 tmpSmilesCodeExpectedPosition = i;
@@ -199,24 +207,38 @@ public class DynamicSMILESFileReader {
                             } //else {
                                 // continue to try next element in row
                             //}
-                        } catch (InvalidSmilesException anException) {
+                        } catch (CDKException anException) {
                             // continue to try next element in row
                         }
                     }
                 }
             }
-            if (tmpMolecule.isEmpty()) {
+            if (tmpMolecule == null || tmpMolecule.isEmpty()) {
                 throw new IOException("Chosen file does not fit to the expected format of a SMILES file.");
             }
             boolean tmpHasHeaderLine;
             try {
                 if (tmpIDExpectedPosition == -1) {
-                    tmpSmilesParser.parseSmiles(tmpSmilesFileFirstLine.trim());
+                    try{
+                        //if parsing fails goes to catch block below
+                        ChemUtil.parseSmilesToAtomContainer(tmpSmilesFileFirstLine.trim(), true, false);
+                    } catch (CDKException aCdkException){
+                        //if it fails again, goes to catch block below
+                        ChemUtil.parseSmilesToAtomContainer(tmpSmilesFileFirstLine.trim(), false, false);
+                    }
                 } else {
-                    tmpSmilesParser.parseSmiles(tmpSmilesFileFirstLine.trim().split(tmpSmilesFileDeterminedSeparator, 3)[tmpSmilesCodeExpectedPosition]);
+                    try{
+                        //if parsing fails goes to catch block below
+                        ChemUtil.parseSmilesToAtomContainer(tmpSmilesFileFirstLine.trim().split(tmpSmilesFileDeterminedSeparator, 3)[tmpSmilesCodeExpectedPosition],
+                                true, false);
+                    } catch (CDKException aCdkException){
+                        //if it fails again, goes to catch block below
+                        ChemUtil.parseSmilesToAtomContainer(tmpSmilesFileFirstLine.trim().split(tmpSmilesFileDeterminedSeparator, 3)[tmpSmilesCodeExpectedPosition],
+                                false, false);
+                    }
                 }
                 tmpHasHeaderLine = false;
-            } catch (InvalidSmilesException anException) {
+            } catch (CDKException anException) {
                 tmpHasHeaderLine = true;
             }
             return new DynamicSMILESFileFormat(tmpHasHeaderLine, tmpSmilesFileDeterminedSeparator.charAt(0), tmpSmilesCodeExpectedPosition, tmpIDExpectedPosition);
@@ -248,10 +270,8 @@ public class DynamicSMILESFileReader {
                 BufferedReader tmpSmilesFileBufferedReader = new BufferedReader(tmpSmilesFileReader, BasicDefinitions.BUFFER_SIZE)
         ) {
             IAtomContainerSet tmpAtomContainerSet = new AtomContainerSet();
-            IChemObjectBuilder tmpBuilder = SilentChemObjectBuilder.getInstance();
             // AtomContainer to save the parsed SMILES in
             IAtomContainer tmpMolecule;
-            SmilesParser tmpSmilesParser = new SmilesParser(tmpBuilder);
             String tmpSmilesFileCurrentLine;
             String tmpSmilesFileDeterminedSeparator = aFormat.getSeparatorChar().toString();
             String[] tmpProcessedLineArray = new String[0];
@@ -276,12 +296,18 @@ public class DynamicSMILESFileReader {
                         tmpSmiles = tmpSmilesFileCurrentLine.trim();
                     }
                     if (tmpSmiles != null && !tmpSmiles.isEmpty()) {
-                        //throws exception if SMILES string is null, goes to catch block
-                        tmpMolecule = tmpSmilesParser.parseSmiles(tmpSmiles);
+                        try{
+                            //throws exception if SMILES string is null, goes to catch block down below
+                            tmpMolecule = ChemUtil.parseSmilesToAtomContainer(tmpSmiles, true, false);
+                        } catch (CDKException aCdkException){
+                            //if it fails again, goes to catch block below
+                            tmpMolecule = ChemUtil.parseSmilesToAtomContainer(tmpSmiles, false, false);
+                        }
                     } else {
                         throw new InvalidSmilesException("String is empty");
                     }
-                } catch (InvalidSmilesException | IndexOutOfBoundsException | NullPointerException anException) {
+                } catch (CDKException | IndexOutOfBoundsException | NullPointerException anException) {
+                    //also catches InvalidSmilesException, since it's a subclass of CDKException
                     this.skippedLinesCounter++;
                     DynamicSMILESFileReader.LOGGER.log(Level.WARNING, String.format("Import failed for structure in line (starting at 0):\t%s", tmpLineInFileCounter));
                     continue;
