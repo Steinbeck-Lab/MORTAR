@@ -1,6 +1,6 @@
 /*
  * MORTAR - MOlecule fRagmenTAtion fRamework
- * Copyright (C) 2025  Felix Baensch, Jonas Schaub (felix.j.baensch@gmail.com, jonas.schaub@uni-jena.de)
+ * Copyright (C) 2026  Felix Baensch, Jonas Schaub (felix.j.baensch@gmail.com, jonas.schaub@uni-jena.de)
  *
  * Source code is available at <https://github.com/FelixBaensch/MORTAR>
  *
@@ -30,9 +30,11 @@ import de.unijena.cheminf.mortar.gradle.util.DeployUtil
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
+import org.gradle.process.ExecOperations
 
 import java.io.File
 import java.util.UUID
+import javax.inject.Inject
 
 /**
  * Gradle task for local Windows deployment using Inno Setup 6.
@@ -51,7 +53,9 @@ import java.util.UUID
  *
  * @author Martin Urban
  */
-open class LocalWinDeploy : DefaultTask() {
+open class LocalWinDeploy @Inject constructor(
+    private val execOperations: ExecOperations
+): DefaultTask() {
 
     //<editor-fold desc="public methods">
     init {
@@ -207,7 +211,7 @@ open class LocalWinDeploy : DefaultTask() {
         // Resolve AppId from YAML (create file and mapping if missing)
         val appGuid = getOrCreateAppIdForVersion(appVersion)
         // Call Inno Setup, passing both defines via command line
-        project.exec {
+        execOperations.exec {
             workingDir = tmpWinDeployDir
             commandLine(
                 MortarBundle.message(PropertyNames.LOCAL_DEPLOY_WIN_INNO_SETUP_COMPILER_PATH),

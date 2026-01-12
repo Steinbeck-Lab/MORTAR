@@ -8,7 +8,7 @@ openpdf-version = "2.0.3"
 
 # plugins
 javafxplugin-version = "0.1.0"
-spotless-version = "7.0.2"
+spotless-version = "8.1.0"
 
 [libraries]
 cdkPdb = { group = "org.openscience.cdk", name = "cdk-pdb", version.ref = "cdk-version" }

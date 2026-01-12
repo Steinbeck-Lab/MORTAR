@@ -1,6 +1,6 @@
 /*
  * MORTAR - MOlecule fRagmenTAtion fRamework
- * Copyright (C) 2025  Felix Baensch, Jonas Schaub (felix.j.baensch@gmail.com, jonas.schaub@uni-jena.de)
+ * Copyright (C) 2026  Felix Baensch, Jonas Schaub (felix.j.baensch@gmail.com, jonas.schaub@uni-jena.de)
  *
  * Source code is available at <https://github.com/FelixBaensch/MORTAR>
  *
@@ -92,7 +92,7 @@ public class HistogramViewController implements IViewToolController {
     /**
      * Enum for the available bar spacing width options.
      */
-    public static enum BarWidthOption implements IDisplayEnum {
+    public enum BarWidthOption implements IDisplayEnum {
         /**
          * Small bar width.
          */
@@ -139,7 +139,7 @@ public class HistogramViewController implements IViewToolController {
      * Enum for the available frequency options, i.e. which frequency of the fragments to display, the absolute frequency
      * or the molecule frequency.
      */
-    public static enum FrequencyOption implements IDisplayEnum {
+    public enum FrequencyOption implements IDisplayEnum {
         /**
          * Display the molecule frequencies of the fragments in the histogram.
          */

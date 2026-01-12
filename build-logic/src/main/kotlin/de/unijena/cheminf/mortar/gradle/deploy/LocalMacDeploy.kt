@@ -1,6 +1,6 @@
 /*
  * MORTAR - MOlecule fRagmenTAtion fRamework
- * Copyright (C) 2025  Felix Baensch, Jonas Schaub (felix.j.baensch@gmail.com, jonas.schaub@uni-jena.de)
+ * Copyright (C) 2026  Felix Baensch, Jonas Schaub (felix.j.baensch@gmail.com, jonas.schaub@uni-jena.de)
  *
  * Source code is available at <https://github.com/FelixBaensch/MORTAR>
  *
@@ -31,10 +31,12 @@ import de.unijena.cheminf.mortar.gradle.util.DeployUtil
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
+import org.gradle.process.ExecOperations
 
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
+import javax.inject.Inject
 
 /**
  * Gradle task for local macOS deployment using jpackage.
@@ -51,7 +53,9 @@ import java.nio.file.StandardCopyOption
  *
  * @author Martin Urban
  */
-open class LocalMacDeploy : DefaultTask() {
+open class LocalMacDeploy @Inject constructor(
+    private val execOperations: ExecOperations
+) : DefaultTask() {
     init {
         description = MortarBundle.message(PropertyNames.LOCAL_DEPLOY_MAC_DESC)
         group = MortarBundle.message(PropertyNames.LOCAL_DEPLOY_GRADLE_GROUP)
@@ -98,7 +102,7 @@ open class LocalMacDeploy : DefaultTask() {
             "--java-options", MortarBundle.message(PropertyNames.LOCAL_DEPLOY_UNIX_JAVA_OPTION_2)
         )
 
-        project.exec {
+        execOperations.exec {
             workingDir = project.rootDir
             commandLine(cmd)
         }
